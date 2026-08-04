@@ -1,0 +1,15 @@
+{
+  "name": "The Cashier System",
+  "short_name": "Cashier",
+  "description": "A brandable, offline-first till for UK retail and hospitality — no contracts, any card processor, your data and hardware stay yours.",
+  "start_url": "./till_1.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F5F7",
+  "theme_color": "#0D9488",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

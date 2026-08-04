@@ -4,10 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Till — POS Prototype</title>
+<title>The Cashier System — Till</title>
+<meta name="theme-color" content="#0D9488">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=Merriweather:wght@400;700;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F4F5F7; --surface:#FFFFFF; --surface-alt:#EEF0F3; --border:#E2E4E9;
@@ -15,6 +17,7 @@
   --primary:#0D9488; --primary-dark:#0B7C72; --primary-light:#E4F5F3;
   --accent:#F59E0B; --accent-dark:#D9860A;
   --danger:#DC2626; --danger-light:#FDEAEA; --success:#16A34A; --success-light:#E9F8EF;
+  --warn:#B45309; --warn-light:#FEF3E0;
   --radius-s:8px; --radius-m:14px; --radius-l:22px;
   --shadow-s:0 1px 2px rgba(20,25,35,.06);
   --shadow-m:0 6px 16px rgba(20,25,35,.08);
@@ -22,9 +25,25 @@
   --font-ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
 }
+:root[data-theme="dark"]{
+  --bg:#0E1013; --surface:#181B20; --surface-alt:#20242B; --border:#2C313A;
+  --text:#F2F4F6; --text-soft:#AEB5C0; --text-mute:#767E8A;
+  --primary-light:rgba(45,212,191,.14);
+  --danger-light:rgba(220,38,38,.16); --success-light:rgba(22,163,74,.16); --warn-light:rgba(180,83,9,.2);
+  --shadow-s:0 1px 2px rgba(0,0,0,.3); --shadow-m:0 6px 20px rgba(0,0,0,.4); --shadow-l:0 24px 60px rgba(0,0,0,.55);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]):not([data-theme="dark"]){
+    --bg:#0E1013; --surface:#181B20; --surface-alt:#20242B; --border:#2C313A;
+    --text:#F2F4F6; --text-soft:#AEB5C0; --text-mute:#767E8A;
+    --primary-light:rgba(45,212,191,.14);
+    --danger-light:rgba(220,38,38,.16); --success-light:rgba(22,163,74,.16); --warn-light:rgba(180,83,9,.2);
+    --shadow-s:0 1px 2px rgba(0,0,0,.3); --shadow-m:0 6px 20px rgba(0,0,0,.4); --shadow-l:0 24px 60px rgba(0,0,0,.55);
+  }
+}
 *{box-sizing:border-box;}
 html,body{height:100%;}
-body{margin:0;font-family:var(--font-ui);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+body{margin:0;font-family:var(--font-ui);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;transition:background .2s,color .2s;}
 #app{min-height:100vh;}
 button,input,select,textarea{font-family:inherit;color:inherit;}
 ::selection{background:var(--primary-light);}
@@ -47,22 +66,38 @@ a{color:inherit;}
 .btn-danger:hover{background:#fbdcdc;}
 .btn-accent{background:var(--accent);color:#fff;}
 .btn-accent:hover{background:var(--accent-dark);}
+.btn-warn{background:var(--warn-light);color:var(--warn);}
 .btn-block{width:100%;}
 .btn-lg{padding:15px 22px;font-size:15px;border-radius:var(--radius-m);}
 .btn-sm{padding:7px 12px;font-size:12.5px;border-radius:7px;}
 .btn:disabled{opacity:.4;cursor:not-allowed;}
 .icon-btn{width:38px;height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px;transition:background .15s;}
 .icon-btn:hover{background:var(--surface-alt);}
+.icon-btn.on{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark);}
 
 /* ---------- Forms ---------- */
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
 .field label{font-size:12.5px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;}
-.field input[type=text],.field input[type=number],.field input[type=password],.field select,.field textarea{
+.field input[type=text],.field input[type=number],.field input[type=password],.field input[type=email],.field input[type=tel],.field select,.field textarea{
   padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:14.5px;color:var(--text);transition:border-color .15s;width:100%;}
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);outline:none;}
 .field .hint{font-size:12px;color:var(--text-mute);font-weight:500;}
 .field-row{display:flex;gap:14px;}
 .field-row .field{flex:1;}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;}
+.chip{padding:9px 14px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;}
+.chip:hover{background:var(--surface-alt);}
+.chip.sel{background:var(--text);border-color:var(--text);color:var(--surface);}
+.chip.sel-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--surface-alt);}
+.toggle-row:first-child{border-top:none;}
+.toggle-row .tinfo{flex:1;}
+.toggle-row .tname{font-weight:700;font-size:13.5px;}
+.toggle-row .tdesc{font-size:12px;color:var(--text-mute);margin-top:2px;}
+.switch{position:relative;width:42px;height:24px;border-radius:100px;background:var(--surface-alt);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;transition:background .15s;}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:var(--shadow-s);transition:transform .15s;}
+.switch.on{background:var(--primary);border-color:var(--primary);}
+.switch.on::after{transform:translateX(18px);}
 input[type=color]{-webkit-appearance:none;appearance:none;width:54px;height:40px;border:1.5px solid var(--border);border-radius:10px;padding:2px;cursor:pointer;background:var(--surface);}
 input[type=color]::-webkit-color-swatch{border-radius:7px;border:none;}
 input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
@@ -73,21 +108,33 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
 .badge-admin{background:var(--primary-light);color:var(--primary-dark);}
 .badge-cashier{background:var(--surface-alt);color:var(--text-soft);}
+.badge-warn{background:var(--warn-light);color:var(--warn);}
+.badge-danger{background:var(--danger-light);color:var(--danger);}
+.tagline{font-size:12.5px;color:var(--text-mute);font-weight:600;}
+.tagline b{color:var(--text-soft);}
+
+/* ---------- Offline / status pill ---------- */
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:100px;font-size:11.5px;font-weight:700;background:var(--success-light);color:var(--success);}
+.status-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--success);}
+.status-pill.off{background:var(--warn-light);color:var(--warn);}
+.status-pill.off .dot{background:var(--warn);}
 
 /* ---------- Welcome ---------- */
-.welcome-card{max-width:460px;width:100%;text-align:center;padding:44px 36px;}
+.welcome-card{max-width:480px;width:100%;text-align:center;padding:44px 36px;}
 .welcome-mark{width:64px;height:64px;border-radius:18px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:22px;margin:0 auto 20px;}
 .welcome-card h1{font-size:24px;margin-bottom:8px;}
-.welcome-card p{color:var(--text-soft);font-size:14.5px;line-height:1.55;margin-bottom:28px;}
+.welcome-card p{color:var(--text-soft);font-size:14.5px;line-height:1.55;margin-bottom:22px;}
 .welcome-actions{display:flex;flex-direction:column;gap:10px;}
+.welcome-charter{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:24px;}
+.welcome-charter span{font-size:11px;font-weight:700;color:var(--text-mute);background:var(--surface-alt);padding:5px 10px;border-radius:100px;}
 
 /* ---------- Wizard ---------- */
-.wizard-shell{max-width:560px;width:100%;padding:0;overflow:hidden;}
+.wizard-shell{max-width:580px;width:100%;padding:0;overflow:hidden;}
 .wizard-steps{display:flex;padding:22px 32px 0;gap:8px;}
 .wizard-step-dot{flex:1;height:4px;border-radius:3px;background:var(--surface-alt);}
 .wizard-step-dot.active{background:var(--primary);}
 .wizard-step-dot.done{background:var(--primary);opacity:.5;}
-.wizard-body{padding:28px 32px 32px;}
+.wizard-body{padding:28px 32px 32px;max-height:78vh;overflow-y:auto;}
 .wizard-eyebrow{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
 .wizard-body h2{font-size:22px;margin-bottom:6px;}
 .wizard-body>.sub{color:var(--text-soft);font-size:14px;margin-bottom:24px;line-height:1.5;}
@@ -111,7 +158,7 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .logo-upload{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
 .logo-preview{width:72px;height:72px;border-radius:16px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1.5px dashed var(--border);flex-shrink:0;}
 .logo-preview img{width:100%;height:100%;object-fit:cover;}
-.color-row{display:flex;gap:18px;margin-bottom:18px;}
+.color-row{display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap;}
 .color-item{display:flex;align-items:center;gap:10px;}
 .color-item .lbl{font-size:13px;font-weight:600;}
 .preview-strip{border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;background:var(--surface-alt);}
@@ -119,6 +166,11 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .preview-strip .pv-logo img{width:100%;height:100%;object-fit:cover;}
 .preview-strip .pv-name{font-weight:700;font-size:14.5px;}
 .preview-strip .pv-btn{margin-left:auto;padding:9px 16px;border-radius:9px;background:var(--pv-accent,#F59E0B);color:#fff;font-weight:700;font-size:12.5px;}
+.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.style-opt{border:1.5px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;text-align:center;background:var(--surface);}
+.style-opt.sel{border-color:var(--primary);background:var(--primary-light);}
+.style-opt .demo-shape{width:100%;height:28px;background:var(--text-mute);margin:0 auto 8px;opacity:.35;}
+.style-opt .lbl{font-size:12px;font-weight:700;}
 
 /* ---------- PIN Login ---------- */
 .login-shell{max-width:380px;width:100%;text-align:center;}
@@ -138,10 +190,14 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .pin-key:active{transform:scale(.94);}
 .pin-key.wide{grid-column:span 1;font-size:13px;font-weight:600;color:var(--text-soft);}
 .pin-hint{margin-top:20px;font-size:12px;color:var(--text-mute);background:var(--surface-alt);padding:10px 14px;border-radius:10px;}
+.pin-pad-sm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:200px;margin:14px auto 0;}
+.pin-pad-sm button{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);font-size:15px;font-weight:700;font-family:var(--font-mono);cursor:pointer;}
+.pin-pad-sm button:hover{background:var(--surface-alt);}
+.pin-pad-sm button.wide{font-size:11px;color:var(--text-soft);}
 
 /* ---------- Till layout ---------- */
 .till-wrap{display:flex;flex-direction:column;height:100vh;}
-.till-header{display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.till-header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
 .th-logo{width:36px;height:36px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden;}
 .th-logo img{width:100%;height:100%;object-fit:cover;}
 .th-name{font-weight:800;font-size:15px;}
@@ -155,9 +211,9 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .cat-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;flex-shrink:0;}
 .cat-tab{padding:9px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
 .cat-tab:hover{background:var(--surface-alt);}
-.cat-tab.active{background:var(--text);border-color:var(--text);color:#fff;}
-.search-row{margin-bottom:14px;flex-shrink:0;}
-.search-row input{width:100%;padding:11px 14px;border-radius:11px;border:1.5px solid var(--border);font-size:14px;background:var(--surface);}
+.cat-tab.active{background:var(--text);border-color:var(--text);color:var(--surface);}
+.search-row{margin-bottom:14px;flex-shrink:0;display:flex;gap:8px;}
+.search-row input{flex:1;padding:11px 14px;border-radius:11px;border:1.5px solid var(--border);font-size:14px;background:var(--surface);}
 .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;overflow-y:auto;padding-bottom:20px;align-content:start;}
 .product-btn{border:none;border-radius:16px;padding:16px 14px;text-align:left;cursor:pointer;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:var(--shadow-s);transition:transform .08s ease,box-shadow .15s ease;position:relative;}
 .product-btn:active{transform:scale(.96);}
@@ -165,46 +221,63 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .product-btn .nm{font-weight:700;font-size:13.5px;line-height:1.25;margin-top:6px;}
 .product-btn .dt{font-size:10.5px;opacity:.85;margin-top:1px;}
 .product-btn .pr{font-family:var(--font-mono);font-weight:700;font-size:14px;margin-top:8px;}
+.product-btn .stock-tag{position:absolute;top:8px;right:8px;font-size:9.5px;font-weight:800;background:rgba(0,0,0,.28);padding:2px 6px;border-radius:100px;font-family:var(--font-mono);}
+.product-btn .stock-tag.low{background:var(--danger);}
+.product-btn .age-tag{position:absolute;top:8px;left:8px;font-size:10px;background:rgba(0,0,0,.3);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;}
 .empty-state{margin:auto;text-align:center;color:var(--text-mute);padding:40px;}
 .empty-state .em{font-size:30px;margin-bottom:10px;}
 
 /* ---------- Cart ---------- */
-.cart-panel{width:360px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
-.cart-head{padding:18px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cart-panel{width:370px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+.cart-head{padding:16px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .cart-head h3{font-size:15px;}
+.cart-head-actions{display:flex;gap:6px;}
+.cart-customer{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--surface-alt);font-size:12.5px;}
+.cart-customer .cav{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cart-customer .cn{font-weight:700;flex:1;}
+.cart-customer .cp{color:var(--text-mute);font-family:var(--font-mono);font-size:11px;}
 .cart-items{flex:1;overflow-y:auto;padding:10px 16px;}
 .cart-empty{text-align:center;color:var(--text-mute);font-size:13px;padding:50px 20px;}
-.cart-line{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--surface-alt);}
+.cart-line{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--surface-alt);flex-wrap:wrap;}
 .cart-line .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
 .cart-line .info{flex:1;min-width:0;}
 .cart-line .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cart-line .pr{font-size:11.5px;color:var(--text-mute);font-family:var(--font-mono);}
+.cart-line .pr .was{text-decoration:line-through;opacity:.6;margin-right:4px;}
 .qty-ctrl{display:flex;align-items:center;gap:6px;}
 .qty-btn{width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
 .qty-val{font-family:var(--font-mono);font-weight:700;font-size:12.5px;min-width:16px;text-align:center;}
 .line-total{font-family:var(--font-mono);font-weight:700;font-size:13px;min-width:52px;text-align:right;}
 .rm-btn{color:var(--text-mute);background:none;border:none;cursor:pointer;font-size:14px;padding:2px;}
-.cart-foot{padding:16px 20px 20px;border-top:1px solid var(--border);}
+.disc-btn{color:var(--accent-dark);background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;padding:2px;}
+.line-disc-tag{font-size:10px;font-weight:800;color:var(--success);background:var(--success-light);padding:1px 6px;border-radius:100px;margin-left:22px;}
+.cart-foot{padding:14px 20px 18px;border-top:1px solid var(--border);}
 .tot-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-soft);margin-bottom:6px;}
-.tot-row.grand{font-size:19px;font-weight:800;color:var(--text);font-family:var(--font-mono);margin:10px 0 16px;}
+.tot-row.disc{color:var(--success);}
+.tot-row.grand{font-size:19px;font-weight:800;color:var(--text);font-family:var(--font-mono);margin:10px 0 14px;}
 .cart-foot-actions{display:flex;gap:8px;}
+.cart-foot-row2{display:flex;gap:8px;margin-bottom:8px;}
+.cart-foot-row2 .btn{flex:1;}
 
 /* ---------- Modal ---------- */
 .modal-overlay{position:fixed;inset:0;background:rgba(15,18,24,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(2px);}
 .modal{background:var(--surface);border-radius:var(--radius-l);max-width:440px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-l);}
 .modal-lg{max-width:640px;}
+.modal-xl{max-width:820px;}
 .modal-head{padding:22px 26px 4px;display:flex;align-items:start;justify-content:space-between;}
 .modal-head h2{font-size:18px;}
 .modal-head .close{cursor:pointer;color:var(--text-mute);background:none;border:none;font-size:18px;padding:4px;}
 .modal-body{padding:18px 26px 26px;}
 
 /* ---------- Checkout ---------- */
-.pay-tabs{display:flex;gap:8px;margin-bottom:20px;background:var(--surface-alt);padding:5px;border-radius:12px;}
-.pay-tab{flex:1;padding:10px;border-radius:9px;border:none;background:none;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-soft);}
+.pay-tabs{display:flex;gap:8px;margin-bottom:20px;background:var(--surface-alt);padding:5px;border-radius:12px;flex-wrap:wrap;}
+.pay-tab{flex:1;padding:10px;border-radius:9px;border:none;background:none;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-soft);min-width:70px;}
 .pay-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-s);}
 .due-box{text-align:center;padding:18px;background:var(--primary-light);border-radius:14px;margin-bottom:18px;}
 .due-box .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--primary-dark);}
 .due-box .amt{font-family:var(--font-mono);font-weight:800;font-size:32px;color:var(--primary-dark);margin-top:2px;}
+.due-box .sub{font-size:11.5px;color:var(--primary-dark);opacity:.75;margin-top:4px;}
+.loyalty-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface-alt);padding:10px 14px;border-radius:12px;margin-bottom:14px;font-size:12.5px;}
 .quick-cash{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
 .quick-cash button{padding:12px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font-mono);}
 .quick-cash button:hover{background:var(--surface-alt);}
@@ -218,6 +291,22 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .card-sim .cico{font-size:34px;margin-bottom:12px;}
 .spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:10px auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
+.way-mode-row{display:flex;gap:8px;margin-bottom:14px;}
+.way-mode-row .chip{flex:1;text-align:center;}
+.way-count-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;justify-content:center;}
+.way-count-row button{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-weight:800;font-size:16px;cursor:pointer;}
+.way-count-row .n{font-family:var(--font-mono);font-weight:800;font-size:20px;min-width:26px;text-align:center;}
+.assign-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--surface-alt);font-size:12.5px;}
+.assign-row .nm{flex:1;font-weight:600;}
+.guest-pick{display:flex;gap:4px;}
+.guest-pick button{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--border);background:var(--surface);font-size:11px;font-weight:800;cursor:pointer;}
+.guest-pick button.sel{background:var(--primary);border-color:var(--primary);color:#fff;}
+.share-card{border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.share-card.paid{background:var(--success-light);border-color:var(--success);}
+.share-card .sn{font-weight:700;font-size:13.5px;flex:1;}
+.share-card .sa{font-family:var(--font-mono);font-weight:800;font-size:15px;}
+.share-card .sbtns{display:flex;gap:6px;}
+.share-card .sbtns button{padding:7px 10px;font-size:11.5px;}
 
 /* ---------- Receipt ---------- */
 .receipt{background:var(--surface);width:100%;max-width:320px;margin:0 auto;padding:26px 22px 20px;font-family:var(--font-mono);position:relative;}
@@ -235,10 +324,12 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .receipt-foot{text-align:center;font-size:10.5px;color:var(--text-mute);margin-top:16px;line-height:1.6;}
 .perf{height:14px;position:relative;overflow:hidden;}
 .perf::before{content:'';position:absolute;top:-7px;left:0;right:0;height:14px;background-image:radial-gradient(circle 7px, var(--bg) 7px, transparent 7.5px);background-size:20px 14px;background-repeat:repeat-x;}
+.receipt-choice-row{display:flex;gap:8px;margin-top:16px;}
+.receipt-choice-row .btn{flex:1;}
 
 /* ---------- Control panel ---------- */
 .cp-wrap{display:flex;height:100vh;}
-.cp-sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:18px 12px;}
+.cp-sidebar{width:230px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:18px 12px;overflow-y:auto;}
 .cp-brand{display:flex;align-items:center;gap:10px;padding:6px 10px 20px;}
 .cp-brand .lg{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;overflow:hidden;}
 .cp-brand .lg img{width:100%;height:100%;object-fit:cover;}
@@ -247,7 +338,7 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .cp-nav button{display:flex;align-items:center;gap:10px;text-align:left;padding:11px 12px;border-radius:10px;border:none;background:none;font-weight:600;font-size:13.5px;color:var(--text-soft);cursor:pointer;}
 .cp-nav button:hover{background:var(--surface-alt);}
 .cp-nav button.active{background:var(--primary-light);color:var(--primary-dark);}
-.cp-sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.cp-sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
 .cp-main{flex:1;overflow-y:auto;padding:30px 40px 60px;}
 .cp-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
 .cp-topbar h1{font-size:22px;}
@@ -256,13 +347,13 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .section-card h3{font-size:15px;margin-bottom:4px;}
 .section-card .sc-sub{color:var(--text-soft);font-size:12.5px;margin-bottom:18px;}
 .cat-block{margin-bottom:22px;}
-.cat-block-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cat-block-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
 .cat-block-head .swd{width:10px;height:10px;border-radius:3px;}
 .cat-block-head h4{font-size:13.5px;flex:1;}
 .prod-list{display:flex;flex-direction:column;gap:8px;}
-.prod-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+.prod-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);flex-wrap:wrap;}
 .prod-row .swatch{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0;}
-.prod-row .pinfo{flex:1;min-width:0;}
+.prod-row .pinfo{flex:1;min-width:120px;}
 .prod-row .pn{font-weight:700;font-size:13.5px;}
 .prod-row .pd{font-size:11.5px;color:var(--text-mute);}
 .prod-row .pp{font-family:var(--font-mono);font-weight:700;font-size:13.5px;color:var(--text-soft);width:64px;text-align:right;}
@@ -288,6 +379,26 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 .bar-row .bv{width:64px;text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-soft);flex-shrink:0;}
 .txn-row{cursor:pointer;}
 .txn-detail{background:var(--surface-alt);padding:14px 16px;border-radius:10px;margin:-4px 0 10px;font-size:12.5px;}
+.insight-list{display:flex;flex-direction:column;gap:10px;}
+.insight-item{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--surface-alt);font-size:13px;}
+.insight-item .ic{font-size:16px;}
+.charter-list{display:flex;flex-direction:column;gap:0;}
+.charter-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-top:1px solid var(--surface-alt);}
+.charter-item:first-child{border-top:none;}
+.charter-item .num{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.charter-item .txt{font-size:13.5px;line-height:1.5;padding-top:2px;}
+.proc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+.proc-opt{border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;background:var(--surface);}
+.proc-opt.sel{border-color:var(--primary);background:var(--primary-light);}
+.proc-opt .pn{font-weight:700;font-size:13px;}
+.proc-opt .pr{font-size:11px;color:var(--text-mute);font-family:var(--font-mono);margin-top:4px;}
+.customer-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;}
+.customer-row:hover{background:var(--surface-alt);}
+.customer-row .cav{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.customer-row .cinfo{flex:1;min-width:0;}
+.customer-row .cn{font-weight:700;font-size:13.5px;}
+.customer-row .cm{font-size:11.5px;color:var(--text-mute);}
+.customer-row .cpts{font-family:var(--font-mono);font-size:12px;color:var(--accent-dark);font-weight:700;}
 
 /* ---------- misc ---------- */
 .divider{height:1px;background:var(--border);margin:22px 0;}
@@ -295,13 +406,23 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 .upload-row{display:flex;align-items:center;gap:12px;}
 .file-btn{position:relative;overflow:hidden;}
 .file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:400;box-shadow:var(--shadow-m);pointer-events:none;max-width:88vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.display-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;background:var(--bg);}
+.display-screen .dlogo{width:88px;height:88px;border-radius:22px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:30px;margin-bottom:18px;overflow:hidden;}
+.display-screen .dlogo img{width:100%;height:100%;object-fit:cover;}
+.display-screen h1{font-size:26px;margin-bottom:30px;}
+.display-screen .dlines{width:100%;max-width:480px;margin-bottom:20px;}
+.display-screen .dline{display:flex;justify-content:space-between;font-size:16px;padding:10px 0;border-bottom:1px solid var(--border);}
+.display-screen .dtotal{font-size:44px;font-weight:800;font-family:var(--font-mono);margin-top:10px;}
+.display-screen .dsub{color:var(--text-soft);margin-top:8px;font-size:14px;}
 @media (max-width:860px){
   .till-main{flex-direction:column;}
   .cart-panel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:46vh;}
   .cp-wrap{flex-direction:column;height:auto;min-height:100vh;}
   .cp-sidebar{width:100%;flex-direction:row;overflow-x:auto;align-items:center;}
   .cp-nav{flex-direction:row;}
-  .cp-sidebar-foot{margin-top:0;padding-top:0;border-top:none;margin-left:auto;}
+  .cp-sidebar-foot{margin-top:0;padding-top:0;border-top:none;margin-left:auto;flex-direction:row;}
   .cp-main{padding:22px 16px 50px;}
 }
 @media print{
@@ -314,9 +435,40 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 <body>
 <div id="app"></div>
 <script>
-/* ============================ STATE ============================ */
+/* ============================ CONSTANTS ============================ */
+const STORAGE_KEY = 'cashiersystem_state_v1';
 const PALETTE = ['#0D9488','#4F46E5','#DB2777','#DC2626','#D97706','#65A30D','#0891B2','#7C3AED','#111827','#6B7280'];
-const EMOJI_SET = ['☕','🍵','🥤','🍔','🥪','🍕','🍰','🥐','🍪','🍜','👕','👜','🧴','💇','✂️','💅','🔧','🛠️','🧾','🎟️','📦','🛒'];
+const EMOJI_SET = ['☕','🍵','🥤','🍔','🥪','🍕','🍰','🥐','🍪','🍜','👕','👜','🧴','💇','✂️','💅','🔧','🛠️','🧾','🎟️','📦','🛒','🍺','🍷','🍸','🥩','🍟'];
+const FONT_OPTS = [
+  {id:'inter', label:'Inter', stack:"'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", vibe:'Modern & neutral'},
+  {id:'poppins', label:'Poppins', stack:"'Poppins',system-ui,sans-serif", vibe:'Friendly & rounded'},
+  {id:'spacegrotesk', label:'Space Grotesk', stack:"'Space Grotesk',system-ui,sans-serif", vibe:'Sharp & technical'},
+  {id:'nunito', label:'Nunito', stack:"'Nunito',system-ui,sans-serif", vibe:'Soft & approachable'},
+  {id:'merriweather', label:'Merriweather', stack:"'Merriweather',Georgia,serif", vibe:'Classic & trusted'}
+];
+const RADIUS_OPTS = {
+  sharp:{s:4,m:8,l:14,label:'Sharp'},
+  soft:{s:8,m:14,l:22,label:'Soft'},
+  round:{s:13,m:20,l:32,label:'Round'}
+};
+const PROCESSORS = [
+  {id:'own', name:'Your existing acquirer', rate:'Your negotiated rate', note:'Bring any merchant account — we never force a switch.'},
+  {id:'square', name:'Square', rate:'1.6–1.75%', note:'Reference rate, published mid-2026.'},
+  {id:'sumup', name:'SumUp', rate:'0.99–1.69%', note:'Reference rate, published mid-2026.'},
+  {id:'zettle', name:'Zettle (PayPal)', rate:'~1.75%', note:'Reference rate, published mid-2026.'},
+  {id:'dojo', name:'Dojo', rate:'Quoted', note:'UK hospitality-focused acquirer.'},
+  {id:'stripe', name:'Stripe Terminal', rate:'Quoted', note:'Developer-friendly card acquiring.'},
+  {id:'cashonly', name:'Cash only', rate:'0%', note:'No card processing enabled.'}
+];
+const CHARTER = [
+  'Rolling monthly terms. Cancel any time, no exit fee.',
+  'One price, everything included. No feature paywalls, no add-on subscriptions.',
+  'Price increases capped annually and notified 90 days in advance.',
+  'Use any card processor you like, including the one you already have.',
+  'Your data is yours. Full export in open formats, free, on request.',
+  'Your hardware is yours. It keeps working if you leave.',
+  'Published support response times, with an offline mode so a support delay never stops you trading.'
+];
 
 /* ---------- Business type catalogue (searchable, grouped) ---------- */
 const BIZ_TYPE_GROUPS = [
@@ -572,25 +724,58 @@ BIZ_TYPE_GROUPS.forEach(g => g.types.forEach(t => { TYPE_BY_ID[t.id] = t; TYPE_C
 
 function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
 
+/* ---------- Vertical configuration packs ---------- */
+function packForType(id){
+  const hay = ' ' + id + ' ';
+  const has = (...words) => words.some(w => hay.includes(w));
+  if(has('bar-pub','wine-bar','nightclub','brewery','distillery','cidery','cocktail-bar','karaoke','snooker','casino','betting')) return 'bar';
+  if(has('restaurant','steakhouse','sushi-bar','diner','buffet','bbq-smokehouse','noodle-bar','pizzeria','vegan-eatery','food-hall')) return 'restaurant';
+  if(has('takeaway','fast-food','kebab-shop','chicken-shop','fish-chip','food-truck','street-food','sandwich-shop')) return 'takeaway';
+  if(has('cafe','bakery-cafe','tea-room','juice-bar','ice-cream','dessert-bar','donut-shop','bubble-tea','pancake-house','catering-company')) return 'cafe';
+  if(id==='market-stall' || id==='pop-up-shop' || id==='farmers-market-stall' || id==='street-food-stall' || id==='vending-business') return 'market-stall';
+  if(id==='general' || id==='other-not-listed' || id==='community-centre' || id==='membership-club') return 'general';
+  const grp = BIZ_TYPE_GROUPS.find(g => g.types.some(t=>t.id===id));
+  if(grp && (grp.group==='Health & Beauty' || grp.group==='Professional & Financial Services' || grp.group==='Education & Childcare' || grp.group==='Technology & Digital')) return 'services';
+  return 'retail';
+}
+function isHospitalityPack(pack){ return pack==='bar' || pack==='restaurant' || pack==='cafe' || pack==='takeaway'; }
+const PACK_ITEM_LABEL = { retail:'Products', cafe:'Menu items', bar:'Menu items', restaurant:'Menu items', takeaway:'Menu items', services:'Services', 'market-stall':'Stall items', general:'Items' };
+
 function seedState(){
   return {
-    screen: 'welcome', // welcome | wizard | login | till | controlpanel
+    screen: 'welcome', // welcome | wizard | login | till | controlpanel | display
     wizardStep: 1,
     business: {
       name: '', type: 'general', logo: null,
       primaryColor: '#0D9488', accentColor: '#F59E0B',
       currency: '£', taxRate: 20, taxInclusive: true,
-      setupComplete: false, demo: false
+      setupComplete: false, demo: false,
+      darkMode: 'auto', radius: 'soft', font: 'inter',
+      itemLabel: '', ticketLabel: '',
+      paymentProcessor: 'own',
+      stockTrackingEnabled: false, ageRestrictionEnabled: false,
+      loyaltyEnabled: true, pointsPerPound: 1, pointValuePence: 1,
+      receipt: { footer: 'Thank you for your visit!', showAddress:false, address:'', phone:'', width:'80mm', showLogo:true }
     },
-    categories: [], products: [], staff: [],
+    categories: [], products: [], staff: [], customers: [],
     currentStaff: null,
-    cart: [], activeCategory: null, search: '',
-    sales: [],
-    pinBuffer: '', pinError: '',
-    typeSearch: '',
-    checkout: { open:false, tab:'cash', tendered:0, splitCash:0, processing:false, done:false },
+    cart: [], activeCategory: null, search: '', activeCustomerId: null,
+    orderDiscount: { type:'none', value:0, reason:'' },
+    parkedTickets: [],
+    sales: [], cashUps: [], ageChecks: [], voids: [], noSales: [],
+    pinBuffer: '', pinError: '', typeSearch: '',
+    checkout: { open:false, tab:'cash', tendered:0, splitCash:0, redeemPoints:false, receiptChoice:'print', emailInput:'',
+      wayMode:'even', wayCount:2, wayAssign:{}, wayShares:null, activeShare:0, processing:false },
     receipt: null,
-    cp: { tab:'branding', editingProductId:null, editingCategoryId:null, editingStaffId:null, addingProduct:null, expandedTxn:null, typeSearch:'' }
+    refund: { open:false, saleId:null, qtys:{}, reason:'Customer changed mind', tender:'cash' },
+    override: { open:false, label:'', pin:'', error:'', pending:null },
+    ageGate: { open:false, productId:null },
+    ticketsModal: false,
+    discountModal: { open:false, scope:'order', productId:null, type:'percent', value:10, reason:'' },
+    customerPicker: { open:false, search:'' },
+    online: (typeof navigator!=='undefined' ? navigator.onLine : true),
+    cp: { tab:'branding', editingProductId:null, editingCategoryId:null, editingStaffId:null, addingProduct:null, addingStaff:false,
+      expandedTxn:null, typeSearch:'', editingCustomerId:null, addingCustomer:false, dataMsg:'', importPending:null }
   };
 }
 let state = seedState();
@@ -600,6 +785,8 @@ function seedDemoData(s){
   s.business.type = 'general';
   s.business.setupComplete = true;
   s.business.demo = true;
+  s.business.stockTrackingEnabled = true;
+  s.business.ageRestrictionEnabled = true;
   const cats = [
     {id:'cat-drinks', name:'Drinks', color:'#0891B2'},
     {id:'cat-food', name:'Food', color:'#D97706'},
@@ -608,30 +795,65 @@ function seedDemoData(s){
   ];
   s.categories = cats;
   s.products = [
-    {id:uid(),categoryId:'cat-drinks',name:'Espresso',price:2.50,color:'#0891B2',emoji:'☕',details:'Single shot'},
-    {id:uid(),categoryId:'cat-drinks',name:'Latte',price:3.20,color:'#0891B2',emoji:'☕',details:'Whole milk'},
-    {id:uid(),categoryId:'cat-drinks',name:'Iced Tea',price:2.80,color:'#0891B2',emoji:'🥤',details:''},
-    {id:uid(),categoryId:'cat-food',name:'Bacon Roll',price:4.50,color:'#D97706',emoji:'🥪',details:''},
-    {id:uid(),categoryId:'cat-food',name:'Soup of the Day',price:5.00,color:'#D97706',emoji:'🍜',details:'Ask for todays flavour'},
-    {id:uid(),categoryId:'cat-food',name:'Sandwich',price:4.20,color:'#D97706',emoji:'🥪',details:''},
-    {id:uid(),categoryId:'cat-retail',name:'T-Shirt',price:15.00,color:'#4F46E5',emoji:'👕',details:'One size'},
-    {id:uid(),categoryId:'cat-retail',name:'Mug',price:8.50,color:'#4F46E5',emoji:'📦',details:''},
-    {id:uid(),categoryId:'cat-retail',name:'Tote Bag',price:6.00,color:'#4F46E5',emoji:'👜',details:''},
-    {id:uid(),categoryId:'cat-services',name:'Haircut',price:25.00,color:'#DB2777',emoji:'💇',details:'30 min'},
-    {id:uid(),categoryId:'cat-services',name:'Consultation',price:40.00,color:'#DB2777',emoji:'🧾',details:'45 min'},
-    {id:uid(),categoryId:'cat-services',name:'Basic Repair',price:20.00,color:'#DB2777',emoji:'🔧',details:''}
+    {id:uid(),categoryId:'cat-drinks',name:'Espresso',price:2.50,color:'#0891B2',emoji:'☕',details:'Single shot',sku:'DR-001',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-drinks',name:'Latte',price:3.20,color:'#0891B2',emoji:'☕',details:'Whole milk',sku:'DR-002',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-drinks',name:'Craft Ale',price:4.80,color:'#0891B2',emoji:'🍺',details:'500ml',sku:'DR-003',trackStock:true,stock:36,lowStockThreshold:10,ageRestricted:true},
+    {id:uid(),categoryId:'cat-food',name:'Bacon Roll',price:4.50,color:'#D97706',emoji:'🥪',details:'',sku:'FD-001',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-food',name:'Soup of the Day',price:5.00,color:'#D97706',emoji:'🍜',details:'Ask for todays flavour',sku:'FD-002',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-food',name:'Sandwich',price:4.20,color:'#D97706',emoji:'🥪',details:'',sku:'FD-003',trackStock:true,stock:4,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-retail',name:'T-Shirt',price:15.00,color:'#4F46E5',emoji:'👕',details:'One size',sku:'RT-001',trackStock:true,stock:22,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-retail',name:'Mug',price:8.50,color:'#4F46E5',emoji:'📦',details:'',sku:'RT-002',trackStock:true,stock:14,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-retail',name:'Tote Bag',price:6.00,color:'#4F46E5',emoji:'👜',details:'',sku:'RT-003',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-services',name:'Haircut',price:25.00,color:'#DB2777',emoji:'💇',details:'30 min',sku:'SV-001',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-services',name:'Consultation',price:40.00,color:'#DB2777',emoji:'🧾',details:'45 min',sku:'SV-002',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false},
+    {id:uid(),categoryId:'cat-services',name:'Basic Repair',price:20.00,color:'#DB2777',emoji:'🔧',details:'',sku:'SV-003',trackStock:false,stock:0,lowStockThreshold:5,ageRestricted:false}
   ];
   s.staff = [
     {id:uid(),name:'Alex Morgan',pin:'1234',role:'admin'},
     {id:uid(),name:'Sam Taylor',pin:'1111',role:'cashier'}
   ];
+  s.customers = [
+    {id:uid(),name:'Jordan Blake',phone:'07700 900123',email:'jordan@example.com',loyaltyPoints:42,visits:6,totalSpend:118.40},
+    {id:uid(),name:'Priya Shah',phone:'07700 900456',email:'priya@example.com',loyaltyPoints:8,visits:2,totalSpend:26.10}
+  ];
   s.activeCategory = cats[0].id;
+}
+
+function seedStarterCatalog(){
+  const pack = packForType(state.business.type);
+  const presets = {
+    retail: [ {cat:'Clothing',color:'#4F46E5',items:[['T-Shirt',15,'👕'],['Hoodie',32,'🧥'],['Cap',12,'🧢']]},
+      {cat:'Accessories',color:'#0891B2',items:[['Tote Bag',6,'👜'],['Mug',8.5,'📦']]} ],
+    cafe: [ {cat:'Drinks',color:'#0891B2',items:[['Espresso',2.5,'☕'],['Latte',3.2,'☕'],['Iced Tea',2.8,'🥤']]},
+      {cat:'Food',color:'#D97706',items:[['Bacon Roll',4.5,'🥪'],['Sandwich',4.2,'🥪'],['Soup',5,'🍜']]} ],
+    bar: [ {cat:'Drinks',color:'#0891B2',items:[['Draught Lager',4.6,'🍺'],['House Wine',5.5,'🍷'],['Soft Drink',2.4,'🥤']]},
+      {cat:'Bar Snacks',color:'#D97706',items:[['Nuts',2.5,'🥜'],['Crisps',1.8,'🍟']]} ],
+    restaurant: [ {cat:'Starters',color:'#D97706',items:[['Soup',6,'🍜'],['Garlic Bread',5,'🥖']]},
+      {cat:'Mains',color:'#4F46E5',items:[['House Burger',13.5,'🍔'],['Pasta',12,'🍝']]},
+      {cat:'Drinks',color:'#0891B2',items:[['Soft Drink',2.8,'🥤'],['House Wine',5.5,'🍷']]} ],
+    takeaway: [ {cat:'Mains',color:'#D97706',items:[['Kebab',7.5,'🌯'],['Fried Chicken',6.5,'🍗'],['Fish & Chips',8,'🍟']]},
+      {cat:'Sides & Drinks',color:'#0891B2',items:[['Chips',2.5,'🍟'],['Can of Drink',1.5,'🥤']]} ],
+    services: [ {cat:'Services',color:'#DB2777',items:[['Standard appointment',30,'🧾'],['Extended appointment',55,'✂️']]},
+      {cat:'Add-ons',color:'#65A30D',items:[['Consultation',0,'🧾']]} ],
+    'market-stall': [ {cat:'Stall items',color:'#0D9488',items:[['Item A',5,'📦'],['Item B',8,'📦'],['Item C',12,'📦']]} ],
+    general: [ {cat:'Popular',color:'#0D9488',items:[['Item 1',5,'📦'],['Item 2',10,'📦'],['Item 3',15,'📦']]} ]
+  };
+  const plan = presets[pack] || presets.general;
+  state.categories = []; state.products = [];
+  plan.forEach(group=>{
+    const cid = uid();
+    state.categories.push({id:cid, name:group.cat, color:group.color});
+    group.items.forEach(([name,price,emoji])=>{
+      state.products.push({id:uid(), categoryId:cid, name, price, color:group.color, emoji, details:'', sku:'', trackStock:false, stock:0, lowStockThreshold:5, ageRestricted:false});
+    });
+  });
+  state.activeCategory = state.categories[0]?.id || null;
 }
 
 /* ============================ HELPERS ============================ */
 function esc(str){ return String(str??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtMoney(n){ return state.business.currency + (Math.round((n+Number.EPSILON)*100)/100).toFixed(2); }
-function getInitials(name){ if(!name) return '?'; const p = name.trim().split(/\\s+/); return (p[0]?.[0]||'').toUpperCase() + (p[1]?.[0]||'').toUpperCase(); }
+function getInitials(name){ if(!name) return '?'; const p = name.trim().split(/\s+/); return (p[0]?.[0]||'').toUpperCase() + (p[1]?.[0]||'').toUpperCase(); }
 function shade(hex, pct){
   hex = hex.replace('#','');
   let r = parseInt(hex.substring(0,2),16), g = parseInt(hex.substring(2,4),16), b = parseInt(hex.substring(4,6),16);
@@ -648,13 +870,24 @@ function applyTheme(){
   root.setProperty('--primary-light', hexToRgba(state.business.primaryColor, .12));
   root.setProperty('--accent', state.business.accentColor);
   root.setProperty('--accent-dark', shade(state.business.accentColor, -18));
+  const rad = RADIUS_OPTS[state.business.radius] || RADIUS_OPTS.soft;
+  root.setProperty('--radius-s', rad.s+'px'); root.setProperty('--radius-m', rad.m+'px'); root.setProperty('--radius-l', rad.l+'px');
+  const font = FONT_OPTS.find(f=>f.id===state.business.font) || FONT_OPTS[0];
+  root.setProperty('--font-ui', font.stack);
+  const dm = state.business.darkMode;
+  if(dm==='dark') document.documentElement.setAttribute('data-theme','dark');
+  else if(dm==='light') document.documentElement.setAttribute('data-theme','light');
+  else document.documentElement.removeAttribute('data-theme');
 }
+function packMeta(){ return packForType(state.business.type); }
 function typeLabel(){
-  return {retail:'Products', cafe:'Menu Items', salon:'Services', general:'Items'}[state.business.type] || 'Items';
+  return state.business.itemLabel || PACK_ITEM_LABEL[packMeta()] || 'Items';
 }
-function typeMeta(t){
-  return TYPE_BY_ID[t] || TYPE_BY_ID.general;
+function ticketLabel(plural){
+  const base = state.business.ticketLabel || (isHospitalityPack(packMeta()) ? 'Tab' : 'Ticket');
+  return plural ? base + 's' : base;
 }
+function typeMeta(t){ return TYPE_BY_ID[t] || TYPE_BY_ID.general; }
 function renderTypePicker(opts){
   const q = opts.searchValue.trim().toLowerCase();
   let shown = 0;
@@ -683,14 +916,44 @@ function focusTypeSearch(id){
   const el = document.getElementById(id); if(!el) return;
   el.focus(); const len = el.value.length; el.setSelectionRange(len,len);
 }
-function onWizTypeSearch(v){ state.typeSearch = v; render(); focusTypeSearch('wiz-type-search'); }
-function onCpTypeSearch(v){ state.cp.typeSearch = v; render(); focusTypeSearch('cp-type-search'); }
-function logoNode(size, radiusClass){
+function syncWizStep1Fields(){
+  const nameEl = document.getElementById('wiz-name');
+  if(nameEl) state.business.name = nameEl.value;
+}
+function syncCpBrandingFields(){
+  const nameEl = document.getElementById('cp-name');
+  if(nameEl) state.business.name = nameEl.value;
+  const labelEl = document.getElementById('cp-itemlabel');
+  if(labelEl) state.business.itemLabel = labelEl.value;
+}
+function onWizTypeSearch(v){ syncWizStep1Fields(); state.typeSearch = v; render(); focusTypeSearch('wiz-type-search'); }
+function onCpTypeSearch(v){ syncCpBrandingFields(); state.cp.typeSearch = v; render(); focusTypeSearch('cp-type-search'); }
+function logoNode(){
   if(state.business.logo){ return `<img src="${state.business.logo}" alt="logo">`; }
   return esc(getInitials(state.business.name) || '?');
 }
+function toast(msg){
+  const el = document.createElement('div');
+  el.className = 'toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(), 300); }, 2800);
+}
+
+/* ---------- Cart / totals maths (line discounts + order discount) ---------- */
+function lineGross(item){
+  let g = item.price * item.qty;
+  if(item.lineDiscount && item.lineDiscount.type==='percent') g -= g * item.lineDiscount.value/100;
+  else if(item.lineDiscount && item.lineDiscount.type==='amount') g -= Math.min(g, item.lineDiscount.value);
+  return Math.max(0, g);
+}
 function cartTotals(){
-  const subtotalGross = state.cart.reduce((sum,i)=> sum + i.price*i.qty, 0);
+  const preDiscountGross = state.cart.reduce((sum,i)=> sum + lineGross(i), 0);
+  const od = state.orderDiscount || {type:'none',value:0};
+  let discountAmt = 0;
+  if(od.type==='percent') discountAmt = preDiscountGross * od.value/100;
+  else if(od.type==='amount') discountAmt = Math.min(preDiscountGross, od.value);
+  const subtotalGross = Math.max(0, preDiscountGross - discountAmt);
   let exVat, vat, total;
   if(state.business.taxInclusive){
     total = subtotalGross;
@@ -701,8 +964,94 @@ function cartTotals(){
     vat = exVat * state.business.taxRate/100;
     total = exVat + vat;
   }
-  return { exVat, vat, total };
+  return { exVat, vat, total, discountAmt, preDiscountGross };
 }
+function activeCustomer(){ return state.customers.find(c=>c.id===state.activeCustomerId) || null; }
+function loyaltyRedemptionValue(){
+  const c = activeCustomer(); if(!c || !state.business.loyaltyEnabled) return 0;
+  return Math.round(c.loyaltyPoints * state.business.pointValuePence)/100;
+}
+function dueAfterRedemption(totals){
+  const redeem = state.checkout.redeemPoints ? loyaltyRedemptionValue() : 0;
+  return Math.max(0, Math.round((totals.total - Math.min(totals.total, redeem)) * 100)/100);
+}
+
+/* ---------- Persistence (offline-first: local storage is the source of truth) ---------- */
+let saveTimer = null;
+function scheduleSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 300); }
+function saveState(){
+  try{
+    const {screen, wizardStep, typeSearch, ...persisted} = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
+  }catch(e){ /* storage unavailable — app still works for this session */ }
+}
+function reviveDatesDeep(obj, keys){
+  keys.forEach(k=>{
+    if(obj && obj[k]) obj[k] = new Date(obj[k]);
+  });
+}
+function loadState(){
+  let raw;
+  try{ raw = localStorage.getItem(STORAGE_KEY); }catch(e){ raw = null; }
+  if(!raw) return null;
+  try{
+    const loaded = JSON.parse(raw);
+    const fresh = seedState();
+    const merged = Object.assign(fresh, loaded);
+    merged.business = Object.assign({}, fresh.business, loaded.business||{});
+    merged.checkout = fresh.checkout; // never resume a mid-payment UI state
+    merged.receipt = null;
+    merged.override = fresh.override; merged.ageGate = fresh.ageGate;
+    merged.refund = fresh.refund; merged.ticketsModal = false;
+    merged.customerPicker = fresh.customerPicker;
+    merged.cp = fresh.cp;
+    (merged.sales||[]).forEach(s=>{ s.time = new Date(s.time); (s.refunds||[]).forEach(r=>r.time=new Date(r.time)); });
+    (merged.cashUps||[]).forEach(c=>c.time = new Date(c.time));
+    (merged.ageChecks||[]).forEach(a=>a.time = new Date(a.time));
+    (merged.voids||[]).forEach(v=>v.time = new Date(v.time));
+    (merged.noSales||[]).forEach(n=>n.time = new Date(n.time));
+    (merged.parkedTickets||[]).forEach(t=>t.createdAt = new Date(t.createdAt));
+    merged.screen = merged.currentStaff ? 'till' : (merged.business.setupComplete ? 'login' : 'welcome');
+    return merged;
+  }catch(e){ return null; }
+}
+function exportAllDataJson(){
+  const {screen, wizardStep, typeSearch, checkout, override, ageGate, refund, ticketsModal, customerPicker, cp, ...data} = state;
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  downloadBlob(blob, sanitizeName(state.business.name)+'-full-export-'+dateStamp()+'.json');
+  toast('Full data export downloaded — it\'s yours, in an open format, any time.');
+}
+function importAllDataJson(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!confirm('Import this data and replace everything currently on this till? This cannot be undone.')) return;
+      const fresh = seedState();
+      state = Object.assign(fresh, data);
+      state.business = Object.assign({}, fresh.business, data.business||{});
+      (state.sales||[]).forEach(s=>{ s.time = new Date(s.time); (s.refunds||[]).forEach(r=>r.time=new Date(r.time)); });
+      (state.cashUps||[]).forEach(c=>c.time = new Date(c.time));
+      (state.ageChecks||[]).forEach(a=>a.time = new Date(a.time));
+      (state.voids||[]).forEach(v=>v.time = new Date(v.time));
+      (state.noSales||[]).forEach(n=>n.time = new Date(n.time));
+      (state.parkedTickets||[]).forEach(t=>t.createdAt = new Date(t.createdAt));
+      state.screen = state.currentStaff ? 'till' : 'login';
+      applyTheme(); saveState(); render();
+      toast('Data imported successfully.');
+    }catch(err){ alert('That file could not be read as a valid export.'); }
+  };
+  reader.readAsText(file);
+}
+function wipeAllData(){
+  if(!confirm('Wipe ALL local data (products, sales, staff, customers, settings)? This cannot be undone.')) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  state = seedState();
+  applyTheme();
+  render();
+}
+
 function render(){
   const root = document.getElementById('app');
   let html = '';
@@ -712,9 +1061,19 @@ function render(){
     case 'login': html = renderLogin(); break;
     case 'till': html = renderTill(); break;
     case 'controlpanel': html = renderControlPanel(); break;
+    case 'display': html = renderCustomerDisplay(); break;
   }
-  root.innerHTML = html + (state.checkout.open ? renderCheckoutModal() : '') + (state.receipt ? renderReceiptModal() : '');
+  root.innerHTML = html
+    + (state.checkout.open ? renderCheckoutModal() : '')
+    + (state.receipt ? renderReceiptModal() : '')
+    + (state.override.open ? renderOverrideModal() : '')
+    + (state.ageGate.open ? renderAgeGateModal() : '')
+    + (state.ticketsModal ? renderTicketsModal() : '')
+    + (state.discountModal.open ? renderDiscountModal() : '')
+    + (state.customerPicker.open ? renderCustomerPickerModal() : '')
+    + (state.refund.open ? renderRefundModal() : '');
   if(state.screen === 'login'){ updatePinDots(); }
+  if(state.screen !== 'display') scheduleSave();
 }
 
 /* ============================ WELCOME ============================ */
@@ -723,11 +1082,14 @@ function renderWelcome(){
   <div class="center-screen">
     <div class="card welcome-card">
       <div class="welcome-mark">£</div>
-      <h1>Set up your till</h1>
-      <p>Build your business profile, add your branding, and get a fully customisable point-of-sale ready to use in a couple of minutes.</p>
+      <h1>The Cashier System</h1>
+      <p>Build your business profile, add your branding, and get a fully customisable, offline-ready point-of-sale trading in a couple of minutes.</p>
       <div class="welcome-actions">
         <button class="btn btn-primary btn-lg btn-block" onclick="startWizard()">Set up my business</button>
         <button class="btn btn-secondary btn-lg btn-block" onclick="useDemoData()">Explore with demo data</button>
+      </div>
+      <div class="welcome-charter">
+        <span>No contracts</span><span>Any card processor</span><span>Works offline</span><span>Your data, your hardware</span>
       </div>
     </div>
   </div>`;
@@ -744,7 +1106,7 @@ function renderWizard(){
     stepHtml = `
       <div class="wizard-eyebrow">Step 1 of 4</div>
       <h2>Tell us about your business</h2>
-      <div class="sub">This shapes the language and layout of your till.</div>
+      <div class="sub">This shapes the language, layout and starter catalogue of your till.</div>
       <div class="field">
         <label>Business name</label>
         <input type="text" id="wiz-name" placeholder="e.g. The Corner Shop" value="${esc(b.name)}">
@@ -756,14 +1118,14 @@ function renderWizard(){
   } else if(step===2){
     stepHtml = `
       <div class="wizard-eyebrow">Step 2 of 4</div>
-      <h2>Add your branding</h2>
-      <div class="sub">Upload a logo and pick colours that match your brand — you can change these any time from the control panel.</div>
+      <h2>Make it yours</h2>
+      <div class="sub">Upload a logo, pick your colours and a style. Every one of these can be changed any time from the control panel — this is a brandable platform, not a fixed template.</div>
       <div class="field">
         <label>Logo</label>
         <div class="logo-upload">
           <div class="logo-preview" id="wiz-logo-preview">${b.logo ? `<img src="${b.logo}">` : '<span style="color:var(--text-mute);font-size:11px;">No logo</span>'}</div>
           <div style="display:flex;flex-direction:column;gap:8px;">
-            <button class="btn btn-secondary btn-sm file-btn">Upload image<input type="file" accept="image/*" onchange="handleLogoUpload(this,'wiz-logo-preview')"></button>
+            <button class="btn btn-secondary btn-sm file-btn">Upload image<input type="file" accept="image/*" onchange="handleLogoUpload(this)"></button>
             ${b.logo ? `<button class="btn btn-ghost btn-sm" onclick="removeLogo()">Remove logo</button>` : ''}
           </div>
         </div>
@@ -773,6 +1135,16 @@ function renderWizard(){
         <div class="color-row">
           <div class="color-item"><input type="color" id="wiz-primary" value="${b.primaryColor}" oninput="livePreviewColors()"><span class="lbl">Primary</span></div>
           <div class="color-item"><input type="color" id="wiz-accent" value="${b.accentColor}" oninput="livePreviewColors()"><span class="lbl">Accent</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Style</label>
+        <div class="style-grid">
+          ${Object.entries(RADIUS_OPTS).map(([id,o])=>`
+            <div class="style-opt ${b.radius===id?'sel':''}" onclick="selectRadius('${id}')">
+              <div class="demo-shape" style="border-radius:${o.m}px"></div>
+              <div class="lbl">${o.label}</div>
+            </div>`).join('')}
         </div>
       </div>
       <div class="preview-strip" id="wiz-preview-strip" style="--pv-primary:${b.primaryColor};--pv-accent:${b.accentColor}">
@@ -792,7 +1164,7 @@ function renderWizard(){
       <div class="field">
         <label>4-digit PIN</label>
         <input type="text" inputmode="numeric" maxlength="4" id="wiz-staff-pin" placeholder="1234" value="">
-        <div class="hint">You'll use this to log in at the till.</div>
+        <div class="hint">You'll use this to log in at the till, and to authorise voids, discounts and refunds.</div>
       </div>
       <div class="field">
         <label>Currency &amp; tax</label>
@@ -806,7 +1178,7 @@ function renderWizard(){
     stepHtml = `
       <div class="wizard-eyebrow">Step 4 of 4</div>
       <h2>All set, ${esc(b.name||'there')}</h2>
-      <div class="sub">Here's a quick summary. You can fine-tune everything later from the control panel.</div>
+      <div class="sub">Here's a quick summary. Everything — branding, catalogue, tax, payments — can be fine-tuned later from the control panel.</div>
       <div class="preview-strip" style="margin-bottom:18px;--pv-primary:${b.primaryColor};--pv-accent:${b.accentColor}">
         <div class="pv-logo">${b.logo?`<img src="${b.logo}">`:esc(getInitials(b.name)||'?')}</div>
         <div class="pv-name">${esc(b.name)}</div>
@@ -816,7 +1188,7 @@ function renderWizard(){
         <div class="field"><label>Business type</label><p style="font-size:14px;font-weight:600;">${typeMeta(b.type).label}</p></div>
         <div class="field"><label>Currency</label><p style="font-size:14px;font-weight:600;">${esc(b.currency)} · ${b.taxRate}% tax</p></div>
       </div>
-      <div class="hint" style="margin-bottom:6px;">We've added a starter set of categories and items for a ${typeMeta(b.type).label.toLowerCase()} — you can edit or remove them from the control panel any time.</div>`;
+      <div class="hint" style="margin-bottom:6px;">We've added a starter catalogue for a ${typeMeta(b.type).label.toLowerCase()} — you can edit or remove every item from the control panel any time.</div>`;
   }
   const dots = [1,2,3,4].map(n => `<div class="wizard-step-dot ${n===step?'active':n<step?'done':''}"></div>`).join('');
   return `
@@ -833,20 +1205,18 @@ function renderWizard(){
     </div>
   </div>`;
 }
-function selectBizType(t){ state.business.type = t; render(); }
+function selectBizType(t){ syncWizStep1Fields(); state.business.type = t; render(); }
+function selectRadius(id){ state.business.radius = id; applyTheme(); render(); }
 function livePreviewColors(){
   const p = document.getElementById('wiz-primary').value;
   const a = document.getElementById('wiz-accent').value;
   const strip = document.getElementById('wiz-preview-strip');
   if(strip){ strip.style.setProperty('--pv-primary', p); strip.style.setProperty('--pv-accent', a); strip.querySelector('.pv-logo').style.background = p; strip.querySelector('.pv-btn').style.background = a; }
 }
-function handleLogoUpload(input, previewId){
+function handleLogoUpload(input){
   const file = input.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
-    state.business.logo = e.target.result;
-    render();
-  };
+  reader.onload = e => { state.business.logo = e.target.result; render(); };
   reader.readAsDataURL(file);
 }
 function removeLogo(){ state.business.logo = null; render(); }
@@ -870,31 +1240,11 @@ function wizardNext(){
     b.taxRate = parseFloat(document.getElementById('wiz-taxrate').value) || 0;
     state._pendingStaff = {name:nm, pin};
     seedStarterCatalog();
+    state.business.stockTrackingEnabled = false;
+    state.business.ageRestrictionEnabled = false;
   }
   state.wizardStep++;
   render();
-}
-function seedStarterCatalog(){
-  const t = state.business.type;
-  const presets = {
-    retail: [ {cat:'Clothing',color:'#4F46E5',items:[['T-Shirt',15,'👕'],['Hoodie',32,'🧥'],['Cap',12,'🧢']]},
-      {cat:'Accessories',color:'#0891B2',items:[['Tote Bag',6,'👜'],['Mug',8.5,'📦']]} ],
-    cafe: [ {cat:'Drinks',color:'#0891B2',items:[['Espresso',2.5,'☕'],['Latte',3.2,'☕'],['Iced Tea',2.8,'🥤']]},
-      {cat:'Food',color:'#D97706',items:[['Bacon Roll',4.5,'🥪'],['Sandwich',4.2,'🥪'],['Soup',5,'🍜']]} ],
-    salon: [ {cat:'Hair',color:'#DB2777',items:[['Haircut',25,'💇'],['Colour',55,'💅'],['Blow Dry',18,'✂️']]},
-      {cat:'Other',color:'#65A30D',items:[['Consultation',0,'🧾']]} ],
-    general: [ {cat:'Popular',color:'#0D9488',items:[['Item 1',5,'📦'],['Item 2',10,'📦'],['Item 3',15,'📦']]} ]
-  };
-  const plan = presets[t] || presets.general;
-  state.categories = []; state.products = [];
-  plan.forEach(group=>{
-    const cid = uid();
-    state.categories.push({id:cid, name:group.cat, color:group.color});
-    group.items.forEach(([name,price,emoji])=>{
-      state.products.push({id:uid(), categoryId:cid, name, price, color:group.color, emoji, details:''});
-    });
-  });
-  state.activeCategory = state.categories[0]?.id || null;
 }
 function finishWizard(){
   const b = state.business;
@@ -907,6 +1257,7 @@ function finishWizard(){
   state.currentStaff = staffObj;
   state.screen = 'till';
   render();
+  toast('Welcome to The Cashier System — you\'re trading.');
 }
 
 /* ============================ PIN LOGIN ============================ */
@@ -929,6 +1280,7 @@ function renderLogin(){
         <button class="pin-key wide" onclick="pinBackspace()">⌫</button>
       </div>
       ${b.demo ? `<div class="pin-hint">Demo PINs — Admin: <strong>1234</strong> &nbsp;·&nbsp; Cashier: <strong>1111</strong></div>` : ''}
+      <div class="tagline" style="margin-top:22px;">No contracts · Cancel anytime · Works fully offline</div>
     </div>
   </div>`;
 }
@@ -957,6 +1309,183 @@ function tryPinLogin(){
 }
 function logout(){ state.currentStaff=null; state.cart=[]; state.pinBuffer=''; state.pinError=''; state.screen='login'; render(); }
 
+/* ============================ MANAGER OVERRIDE ============================ */
+function requireManagerPin(label, cb){
+  state.override = { open:true, label, pin:'', error:'', pending:cb };
+  render();
+}
+function renderOverrideModal(){
+  const o = state.override;
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) cancelOverride()">
+    <div class="modal" style="max-width:360px;">
+      <div class="modal-head"><h2>Manager approval</h2><button class="close" onclick="cancelOverride()">✕</button></div>
+      <div class="modal-body" style="text-align:center;">
+        <p style="font-size:13.5px;color:var(--text-soft);margin-bottom:6px;">${esc(o.label)}</p>
+        <p style="font-size:12px;color:var(--text-mute);margin-bottom:4px;">Enter an admin PIN to authorise this action.</p>
+        <div class="pin-error">${o.error||''}</div>
+        <div class="pin-dots" id="override-dots">${[0,1,2,3].map(i=>`<div class="pin-dot ${i<o.pin.length?'filled':''} ${o.error?'err':''}"></div>`).join('')}</div>
+        <div class="pin-pad-sm">
+          ${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="overridePinPress('${n}')">${n}</button>`).join('')}
+          <button class="wide" onclick="cancelOverride()">Cancel</button>
+          <button onclick="overridePinPress('0')">0</button>
+          <button class="wide" onclick="overridePinBackspace()">⌫</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function overridePinPress(d){
+  const o = state.override; if(o.pin.length>=4) return;
+  o.pin += d; o.error='';
+  if(o.pin.length===4){ render(); setTimeout(tryOverridePin, 120); } else render();
+}
+function overridePinBackspace(){ state.override.pin = state.override.pin.slice(0,-1); render(); }
+function tryOverridePin(){
+  const o = state.override;
+  const ok = state.staff.some(s=>s.role==='admin' && s.pin===o.pin);
+  if(ok){
+    const cb = o.pending;
+    state.override = { open:false, label:'', pin:'', error:'', pending:null };
+    if(cb) cb();
+    render();
+  } else {
+    o.error = 'Incorrect manager PIN'; o.pin=''; render();
+  }
+}
+function cancelOverride(){ state.override = { open:false, label:'', pin:'', error:'', pending:null }; render(); }
+
+/* ============================ AGE GATE ============================ */
+function renderAgeGateModal(){
+  const p = state.products.find(x=>x.id===state.ageGate.productId);
+  if(!p) return '';
+  return `
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-head"><h2>Age check — Challenge 25</h2></div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:34px;margin-bottom:10px;">🪪</div>
+        <p style="font-size:14px;margin-bottom:4px;"><strong>${esc(p.name)}</strong> is age-restricted.</p>
+        <p style="font-size:13px;color:var(--text-soft);margin-bottom:20px;">Confirm the customer looks 25 or over, or ask for ID. This check is logged for licensing evidence.</p>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-danger btn-block" onclick="confirmAgeRefuse()">Refuse sale</button>
+          <button class="btn btn-primary btn-block" onclick="confirmAgeOk()">Confirmed — add item</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function confirmAgeOk(){
+  const p = state.products.find(x=>x.id===state.ageGate.productId);
+  state.ageChecks.push({id:uid(), time:new Date(), productName:p?.name||'', staffName:state.currentStaff?.name||'', result:'confirmed'});
+  state.ageGate = {open:false, productId:null};
+  if(p) reallyAddToCart(p);
+  else render();
+}
+function confirmAgeRefuse(){
+  const p = state.products.find(x=>x.id===state.ageGate.productId);
+  state.ageChecks.push({id:uid(), time:new Date(), productName:p?.name||'', staffName:state.currentStaff?.name||'', result:'refused'});
+  state.ageGate = {open:false, productId:null};
+  render();
+  toast('Sale refused and logged.');
+}
+
+/* ============================ TICKETS (park / recall — also "tabs") ============================ */
+function ticketDefaultName(){
+  const n = state.parkedTickets.length + 1;
+  return ticketLabel() + ' ' + n;
+}
+function parkCurrentSale(){
+  if(!state.cart.length){ toast('Nothing to park — the sale is empty.'); return; }
+  const name = prompt(`Name this ${ticketLabel().toLowerCase()}:`, ticketDefaultName());
+  if(name===null) return;
+  state.parkedTickets.push({
+    id: uid(), name: name.trim() || ticketDefaultName(),
+    cart: state.cart, orderDiscount: state.orderDiscount, customerId: state.activeCustomerId,
+    createdAt: new Date()
+  });
+  state.cart = []; state.orderDiscount = {type:'none',value:0,reason:''}; state.activeCustomerId = null;
+  render();
+  toast(`${ticketLabel()} parked — recall it any time from “Open ${ticketLabel(true).toLowerCase()}”.`);
+}
+function openTicketsModal(){ state.ticketsModal = true; render(); }
+function closeTicketsModal(){ state.ticketsModal = false; render(); }
+function recallTicket(id){
+  if(state.cart.length && !confirm('Recalling will replace the current sale on screen — continue?')) return;
+  const t = state.parkedTickets.find(x=>x.id===id); if(!t) return;
+  state.cart = t.cart; state.orderDiscount = t.orderDiscount || {type:'none',value:0,reason:''}; state.activeCustomerId = t.customerId||null;
+  state.parkedTickets = state.parkedTickets.filter(x=>x.id!==id);
+  state.ticketsModal = false;
+  render();
+}
+function deleteTicket(id){
+  if(!confirm(`Delete this ${ticketLabel().toLowerCase()}? Its items will be lost.`)) return;
+  state.parkedTickets = state.parkedTickets.filter(x=>x.id!==id);
+  render();
+}
+function renderTicketsModal(){
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeTicketsModal()">
+    <div class="modal">
+      <div class="modal-head"><h2>Open ${ticketLabel(true).toLowerCase()}</h2><button class="close" onclick="closeTicketsModal()">✕</button></div>
+      <div class="modal-body">
+        ${state.parkedTickets.length ? state.parkedTickets.map(t=>{
+          const total = t.cart.reduce((s,i)=>s+lineGrossFor(i),0);
+          return `
+          <div class="prod-row" style="margin-bottom:8px;">
+            <div class="swatch" style="background:var(--primary)">🧾</div>
+            <div class="pinfo"><div class="pn">${esc(t.name)}</div><div class="pd">${t.cart.length} item${t.cart.length===1?'':'s'} · opened ${t.createdAt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>
+            <div class="pp">${fmtMoney(total)}</div>
+            <div class="prod-actions">
+              <button class="btn btn-primary btn-sm" onclick="recallTicket('${t.id}')">Recall</button>
+              <button class="icon-btn" onclick="deleteTicket('${t.id}')" title="Delete">🗑</button>
+            </div>
+          </div>`;
+        }).join('') : `<div class="empty-state"><div class="em">🧾</div>No ${ticketLabel(true).toLowerCase()} parked right now.</div>`}
+      </div>
+    </div>
+  </div>`;
+}
+function lineGrossFor(i){ return lineGross(i); }
+
+/* ============================ CUSTOMERS (till-side picker) ============================ */
+function openCustomerPicker(){ state.customerPicker = {open:true, search:''}; render(); }
+function closeCustomerPicker(){ state.customerPicker = {open:false, search:''}; render(); }
+function onCustomerPickerSearch(v){ state.customerPicker.search = v; render(); document.getElementById('cust-picker-search')?.focus(); }
+function selectCustomerForSale(id){ state.activeCustomerId = id; state.customerPicker = {open:false, search:''}; render(); }
+function clearActiveCustomer(){ state.activeCustomerId = null; render(); }
+function quickAddCustomer(){
+  const name = prompt('Customer name:'); if(!name) return;
+  const phone = prompt('Phone (optional):') || '';
+  const c = {id:uid(), name:name.trim(), phone:phone.trim(), email:'', loyaltyPoints:0, visits:0, totalSpend:0};
+  state.customers.push(c);
+  state.activeCustomerId = c.id;
+  state.customerPicker = {open:false, search:''};
+  render();
+}
+function renderCustomerPickerModal(){
+  const q = state.customerPicker.search.trim().toLowerCase();
+  const list = state.customers.filter(c => !q || c.name.toLowerCase().includes(q) || (c.phone||'').includes(q) || (c.email||'').toLowerCase().includes(q));
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeCustomerPicker()">
+    <div class="modal">
+      <div class="modal-head"><h2>Attach a customer</h2><button class="close" onclick="closeCustomerPicker()">✕</button></div>
+      <div class="modal-body">
+        <div class="search-row"><input id="cust-picker-search" type="text" placeholder="Search customers…" value="${esc(state.customerPicker.search)}" oninput="onCustomerPickerSearch(this.value)"></div>
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;">
+          ${list.length ? list.map(c=>`
+            <div class="customer-row" onclick="selectCustomerForSale('${c.id}')">
+              <div class="cav">${esc(getInitials(c.name))}</div>
+              <div class="cinfo"><div class="cn">${esc(c.name)}</div><div class="cm">${esc(c.phone||c.email||'No contact info')}</div></div>
+              <div class="cpts">${c.loyaltyPoints} pts</div>
+            </div>`).join('') : `<div class="empty-state"><div class="em">👤</div>No customers match.</div>`}
+        </div>
+        <div class="form-actions" style="margin-top:14px;"><button class="btn btn-secondary btn-block" onclick="quickAddCustomer()">+ Quick-add new customer</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
 /* ============================ TILL ============================ */
 function renderTill(){
   const b = state.business;
@@ -965,10 +1494,11 @@ function renderTill(){
   let products = state.products.filter(p => p.categoryId === state.activeCategory);
   if(state.search.trim()){
     const q = state.search.trim().toLowerCase();
-    products = state.products.filter(p => p.name.toLowerCase().includes(q));
+    products = state.products.filter(p => p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q));
   }
   const totals = cartTotals();
   const isAdmin = state.currentStaff && state.currentStaff.role==='admin';
+  const cust = activeCustomer();
   return `
   <div class="till-wrap">
     <div class="till-header">
@@ -977,7 +1507,11 @@ function renderTill(){
         <div class="th-name">${esc(b.name)}</div>
         <div class="th-meta" id="th-clock">${new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>
       </div>
+      <span class="status-pill ${state.online?'':'off'}"><span class="dot"></span>${state.online?'Online — syncing':'Offline — trading normally'}</span>
       <div class="th-spacer"></div>
+      <button class="icon-btn" title="Open ${ticketLabel(true).toLowerCase()}" onclick="openTicketsModal()">🧾${state.parkedTickets.length?` <span style="font-size:10px;">(${state.parkedTickets.length})</span>`:''}</button>
+      <button class="icon-btn" title="No sale (open drawer)" onclick="noSaleFlow()">🗄</button>
+      <button class="icon-btn" title="Customer display" onclick="window.open(location.pathname+'?display=1','_blank','width=480,height=640')">🖥</button>
       ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="openControlPanel()">⚙ Control panel</button>` : ''}
       <div class="th-staff">
         <div class="th-staff-av">${getInitials(state.currentStaff?.name)}</div>
@@ -988,44 +1522,65 @@ function renderTill(){
     <div class="till-main">
       <div class="till-products">
         <div class="search-row">
-          <input type="text" placeholder="Search ${typeLabel().toLowerCase()}…" value="${esc(state.search)}" oninput="onTillSearch(this.value)">
+          <input type="text" placeholder="Search ${typeLabel().toLowerCase()} by name, SKU or barcode…" value="${esc(state.search)}" oninput="onTillSearch(this.value)">
         </div>
         <div class="cat-tabs">
           ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !state.search ?'active':''}" onclick="selectCategory('${c.id}')">${esc(c.name)}</button>`).join('')}
         </div>
         <div class="product-grid">
-          ${products.length ? products.map(p=>`
-            <button class="product-btn" style="background:${p.color||b.primaryColor}" onclick="addToCart('${p.id}')">
+          ${products.length ? products.map(p=>{
+            const low = p.trackStock && p.stock<=p.lowStockThreshold;
+            const out = p.trackStock && p.stock<=0;
+            return `
+            <button class="product-btn" style="background:${p.color||b.primaryColor};${out?'opacity:.5;':''}" onclick="addToCart('${p.id}')">
+              ${p.ageRestricted && b.ageRestrictionEnabled ? `<div class="age-tag">18</div>`:''}
+              ${p.trackStock ? `<div class="stock-tag ${low?'low':''}">${out?'OUT':p.stock+' left'}</div>` : ''}
               <div class="emo">${p.emoji||'📦'}</div>
               <div>
                 <div class="nm">${esc(p.name)}</div>
                 ${p.details?`<div class="dt">${esc(p.details)}</div>`:''}
               </div>
               <div class="pr">${fmtMoney(p.price)}</div>
-            </button>`).join('') : `<div class="empty-state"><div class="em">🗂️</div>No ${typeLabel().toLowerCase()} found</div>`}
+            </button>`;}).join('') : `<div class="empty-state"><div class="em">🗂️</div>No ${typeLabel().toLowerCase()} found</div>`}
         </div>
       </div>
       <div class="cart-panel">
-        <div class="cart-head"><h3>Current sale</h3>${state.cart.length?`<button class="btn btn-ghost btn-sm" onclick="clearCart()">Clear</button>`:''}</div>
+        <div class="cart-head">
+          <h3>Current sale</h3>
+          <div class="cart-head-actions">
+            ${state.cart.length?`<button class="btn btn-ghost btn-sm" onclick="clearCart()">Clear</button>`:''}
+            ${state.cart.length?`<button class="btn btn-ghost btn-sm" onclick="parkCurrentSale()">Park</button>`:''}
+          </div>
+        </div>
+        ${cust ? `
+        <div class="cart-customer">
+          <div class="cav">${esc(getInitials(cust.name))}</div>
+          <div class="cn">${esc(cust.name)} <span style="color:var(--text-mute);font-weight:500;">· ${cust.loyaltyPoints} pts</span></div>
+          <button class="icon-btn" style="width:26px;height:26px;" onclick="clearActiveCustomer()" title="Remove customer">✕</button>
+        </div>` : `<div class="cart-customer" style="cursor:pointer;color:var(--text-mute);" onclick="openCustomerPicker()">👤 <span>Attach a customer for loyalty points</span></div>`}
         <div class="cart-items">
           ${state.cart.length ? state.cart.map(i=>`
             <div class="cart-line">
               <div class="sw" style="background:${i.color}"></div>
               <div class="info">
                 <div class="nm">${esc(i.name)}</div>
-                <div class="pr">${fmtMoney(i.price)} each</div>
+                <div class="pr">${i.lineDiscount && i.lineDiscount.type!=='none' ? `<span class="was">${fmtMoney(i.price)}</span>`:''}${fmtMoney(i.price)} each</div>
+                ${i.lineDiscount && i.lineDiscount.type!=='none' ? `<span class="line-disc-tag">${i.lineDiscount.type==='percent'?i.lineDiscount.value+'% off':fmtMoney(i.lineDiscount.value)+' off'}</span>`:''}
               </div>
               <div class="qty-ctrl">
                 <button class="qty-btn" onclick="changeQty('${i.productId}',-1)">−</button>
                 <div class="qty-val">${i.qty}</div>
                 <button class="qty-btn" onclick="changeQty('${i.productId}',1)">+</button>
               </div>
-              <div class="line-total">${fmtMoney(i.price*i.qty)}</div>
+              <div class="line-total">${fmtMoney(lineGross(i))}</div>
+              <button class="disc-btn" onclick="openLineDiscount('${i.productId}')" title="Discount this line">%</button>
               <button class="rm-btn" onclick="removeFromCart('${i.productId}')">✕</button>
             </div>`).join('') : `<div class="cart-empty">Tap an item to add it to the sale</div>`}
         </div>
         <div class="cart-foot">
+          ${state.cart.length ? `<div class="cart-foot-row2"><button class="btn btn-secondary btn-sm" onclick="openOrderDiscount()">🏷 Discount sale</button><button class="btn btn-warn btn-sm" onclick="voidSaleFlow()">Void sale</button></div>`:''}
           <div class="tot-row"><span>Subtotal</span><span>${fmtMoney(totals.exVat)}</span></div>
+          ${totals.discountAmt>0?`<div class="tot-row disc"><span>Discount</span><span>−${fmtMoney(totals.discountAmt)}</span></div>`:''}
           <div class="tot-row"><span>VAT (${b.taxRate}%)</span><span>${fmtMoney(totals.vat)}</span></div>
           <div class="tot-row grand"><span>Total</span><span>${fmtMoney(totals.total)}</span></div>
           <div class="cart-foot-actions">
@@ -1040,9 +1595,14 @@ function onTillSearch(v){ state.search = v; render(); document.querySelector('.s
 function selectCategory(id){ state.activeCategory = id; state.search=''; render(); }
 function addToCart(productId){
   const p = state.products.find(x=>x.id===productId); if(!p) return;
-  const existing = state.cart.find(i=>i.productId===productId);
+  if(p.trackStock && p.stock<=0){ toast(p.name+' is out of stock.'); return; }
+  if(state.business.ageRestrictionEnabled && p.ageRestricted){ state.ageGate = {open:true, productId}; render(); return; }
+  reallyAddToCart(p);
+}
+function reallyAddToCart(p){
+  const existing = state.cart.find(i=>i.productId===p.id);
   if(existing) existing.qty++;
-  else state.cart.push({productId:p.id, name:p.name, price:p.price, color:p.color||state.business.primaryColor, qty:1});
+  else state.cart.push({productId:p.id, name:p.name, price:p.price, color:p.color||state.business.primaryColor, qty:1, lineDiscount:{type:'none',value:0}});
   render();
 }
 function changeQty(productId, delta){
@@ -1052,16 +1612,103 @@ function changeQty(productId, delta){
   render();
 }
 function removeFromCart(productId){ state.cart = state.cart.filter(i=>i.productId!==productId); render(); }
-function clearCart(){ state.cart=[]; render(); }
+function clearCart(){ state.cart=[]; state.orderDiscount={type:'none',value:0,reason:''}; state.activeCustomerId=null; render(); }
+
+/* ---------- Discounts ---------- */
+function openOrderDiscount(){ state.discountModal = {open:true, scope:'order', productId:null, type:'percent', value:10, reason:''}; render(); }
+function openLineDiscount(productId){ state.discountModal = {open:true, scope:'line', productId, type:'percent', value:10, reason:''}; render(); }
+function closeDiscountModal(){ state.discountModal.open=false; render(); }
+function setDiscountType(t){ state.discountModal.type=t; render(); }
+function setDiscountValue(v){ state.discountModal.value = Math.max(0, parseFloat(v)||0); }
+function setDiscountReason(v){ state.discountModal.reason = v; }
+function applyDiscount(){
+  const d = state.discountModal;
+  const valEl = document.getElementById('disc-value'); const value = valEl ? Math.max(0, parseFloat(valEl.value)||0) : d.value;
+  const reasonEl = document.getElementById('disc-reason'); const reason = reasonEl ? reasonEl.value.trim() : '';
+  const needsApproval = (d.type==='percent' && value>20) || (d.type==='amount' && value>10);
+  const doApply = () => {
+    if(d.scope==='order'){ state.orderDiscount = {type:d.type, value, reason}; }
+    else {
+      const item = state.cart.find(i=>i.productId===d.productId);
+      if(item) item.lineDiscount = {type:d.type, value};
+    }
+    state.discountModal.open = false;
+    render();
+    toast('Discount applied.');
+  };
+  if(needsApproval) requireManagerPin('Approve a discount above the standard threshold', doApply);
+  else doApply();
+}
+function renderDiscountModal(){
+  const d = state.discountModal;
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeDiscountModal()">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-head"><h2>${d.scope==='order'?'Discount whole sale':'Discount this item'}</h2><button class="close" onclick="closeDiscountModal()">✕</button></div>
+      <div class="modal-body">
+        <div class="pay-tabs">
+          <button class="pay-tab ${d.type==='percent'?'active':''}" onclick="setDiscountType('percent')">Percentage</button>
+          <button class="pay-tab ${d.type==='amount'?'active':''}" onclick="setDiscountType('amount')">Amount off</button>
+        </div>
+        <div class="chip-row" style="margin-bottom:14px;">
+          ${(d.type==='percent'?[5,10,20,25]:[1,2,5,10]).map(v=>`<button class="chip" onclick="quickSetDiscount(${v})">${d.type==='percent'?v+'%':fmtMoney(v)}</button>`).join('')}
+        </div>
+        <div class="field">
+          <label>${d.type==='percent'?'Custom percentage':'Custom amount'}</label>
+          <input type="number" id="disc-value" min="0" step="${d.type==='percent'?1:0.01}" value="${d.value}">
+        </div>
+        <div class="field">
+          <label>Reason (optional)</label>
+          <input type="text" id="disc-reason" placeholder="e.g. Loyal customer, damaged packaging…" value="${esc(d.reason)}">
+        </div>
+        <div class="hint" style="margin-bottom:14px;">Discounts above 20% or ${fmtMoney(10)} need manager approval — that's logged automatically.</div>
+        <button class="btn btn-primary btn-lg btn-block" onclick="applyDiscount()">Apply discount</button>
+      </div>
+    </div>
+  </div>`;
+}
+function quickSetDiscount(v){ document.getElementById('disc-value').value = v; state.discountModal.value = v; }
+
+/* ---------- Void sale / No sale (audited, manager-approved) ---------- */
+function voidSaleFlow(){
+  if(!state.cart.length) return;
+  const reason = prompt('Reason for voiding this sale (e.g. Mis-ring, Customer left, Till error):', 'Mis-ring');
+  if(reason===null) return;
+  const totals = cartTotals();
+  requireManagerPin('Approve void of '+fmtMoney(totals.total), ()=>{
+    state.voids.push({id:uid(), time:new Date(), staffName:state.currentStaff?.name||'', total:totals.total, itemCount:state.cart.reduce((a,i)=>a+i.qty,0), reason: reason.trim()||'Not given'});
+    state.cart = []; state.orderDiscount={type:'none',value:0,reason:''}; state.activeCustomerId=null;
+    render();
+    toast('Sale voided and logged for audit.');
+  });
+}
+function noSaleFlow(){
+  requireManagerPin('Approve no-sale (open drawer without a transaction)', ()=>{
+    state.noSales.push({id:uid(), time:new Date(), staffName:state.currentStaff?.name||''});
+    render();
+    toast('Drawer opened (simulated) — logged for audit.');
+  });
+}
 
 /* ============================ CHECKOUT ============================ */
 function openCheckout(){
   const totals = cartTotals();
-  state.checkout = { open:true, tab:'cash', tendered: Math.ceil(totals.total), splitCash:0, processing:false, done:false };
+  state.checkout = { open:true, tab:'cash', tendered: Math.ceil(totals.total), splitCash:0, redeemPoints:false,
+    receiptChoice:'print', emailInput:'', wayMode:'even', wayCount:2, wayAssign:{}, wayShares:null, activeShare:0, processing:false };
   render();
 }
 function closeCheckout(){ state.checkout.open=false; render(); }
-function setPayTab(tab){ state.checkout.tab=tab; state.checkout.processing=false; render(); }
+function setPayTab(tab){
+  state.checkout.tab=tab; state.checkout.processing=false;
+  if(tab==='ways') buildWayShares();
+  render();
+}
+function toggleRedeemPoints(){
+  state.checkout.redeemPoints = !state.checkout.redeemPoints;
+  const totals = cartTotals();
+  state.checkout.tendered = Math.ceil(dueAfterRedemption(totals));
+  render();
+}
 function setTendered(v){ state.checkout.tendered = Math.max(0, v); render(); }
 function onTenderedInput(el){
   state.checkout.tendered = parseFloat(el.value)||0;
@@ -1069,7 +1716,8 @@ function onTenderedInput(el){
 }
 function patchChangeDisplay(){
   const totals = cartTotals();
-  const diff = state.checkout.tendered - totals.total;
+  const due = dueAfterRedemption(totals);
+  const diff = state.checkout.tendered - due;
   const box = document.getElementById('change-box');
   if(!box) return;
   box.classList.toggle('neg', diff<0);
@@ -1080,19 +1728,110 @@ function patchChangeDisplay(){
 function onSplitCashInput(el){
   state.checkout.splitCash = parseFloat(el.value)||0;
   const totals = cartTotals();
-  const card = Math.max(0, totals.total - state.checkout.splitCash);
+  const due = dueAfterRedemption(totals);
+  const card = Math.max(0, due - state.checkout.splitCash);
   document.getElementById('split-card-amt').textContent = fmtMoney(card);
-  document.getElementById('confirm-split-btn').disabled = state.checkout.splitCash < 0 || state.checkout.splitCash > totals.total;
+  document.getElementById('confirm-split-btn').disabled = state.checkout.splitCash < 0 || state.checkout.splitCash > due;
+}
+
+/* ---------- Split ways (evenly or by item) ---------- */
+function setWayMode(m){ state.checkout.wayMode = m; buildWayShares(); render(); }
+function changeWayCount(delta){
+  state.checkout.wayCount = Math.min(8, Math.max(2, state.checkout.wayCount+delta));
+  buildWayShares(); render();
+}
+function assignLineToGuest(idx, guest){ state.checkout.wayAssign[idx] = guest; buildWayShares(); render(); }
+function buildWayShares(){
+  const totals = cartTotals();
+  const due = dueAfterRedemption(totals);
+  const n = state.checkout.wayCount;
+  let shares;
+  if(state.checkout.wayMode==='even'){
+    const base = Math.floor((due*100)/n)/100;
+    shares = Array.from({length:n}, (_,i)=> i===n-1 ? Math.round((due - base*(n-1))*100)/100 : base);
+  } else {
+    const totalsPerGuest = Array(n).fill(0);
+    state.cart.forEach((item, idx)=>{
+      const guest = state.checkout.wayAssign[idx] ?? 0;
+      totalsPerGuest[guest] = (totalsPerGuest[guest]||0) + lineGross(item);
+    });
+    const rawSum = totalsPerGuest.reduce((a,b)=>a+b,0) || 1;
+    shares = totalsPerGuest.map(v => Math.round((v/rawSum)*due*100)/100);
+  }
+  state.checkout.wayShares = shares.map((amt,i)=>({ guest:i+1, amount:amt, paid:false, method:null }));
+}
+function paySlice(i, method){
+  const s = state.checkout.wayShares[i]; if(!s || s.paid) return;
+  s.paid = true; s.method = method;
+  render();
+  if(state.checkout.wayShares.every(x=>x.paid)) setTimeout(()=>completeSale('split-ways'), 350);
+}
+
+function simulateCardPayment(){
+  state.checkout.processing = true; render();
+  setTimeout(()=> completeSale('card'), 900);
+}
+function completeSale(method){
+  const totals = cartTotals();
+  const co = state.checkout;
+  const due = dueAfterRedemption(totals);
+  const redemptionValue = co.redeemPoints ? Math.min(totals.total, loyaltyRedemptionValue()) : 0;
+  let tendered=null, change=null, splitCash=null, splitCard=null, cashNet=0, wayShares=null;
+  if(method==='cash'){ tendered=co.tendered; change=co.tendered-due; cashNet = due; }
+  if(method==='card'){ cashNet = 0; }
+  if(method==='split'){ splitCash=co.splitCash; splitCard=Math.max(0,due-co.splitCash); cashNet = splitCash; }
+  if(method==='split-ways'){
+    wayShares = co.wayShares;
+    cashNet = wayShares.filter(s=>s.method==='cash').reduce((a,s)=>a+s.amount,0);
+  }
+  const cust = activeCustomer();
+  let pointsEarned = 0;
+  if(cust && state.business.loyaltyEnabled && !co.redeemPoints){
+    pointsEarned = Math.floor(due * (state.business.pointsPerPound||0));
+    cust.loyaltyPoints += pointsEarned;
+  } else if(cust && co.redeemPoints){
+    const spent = Math.round(redemptionValue / (state.business.pointValuePence/100 || 1));
+    cust.loyaltyPoints = Math.max(0, cust.loyaltyPoints - spent);
+  }
+  if(cust){ cust.visits = (cust.visits||0)+1; cust.totalSpend = Math.round(((cust.totalSpend||0)+due)*100)/100; }
+  const preDiscountGross = totals.preDiscountGross || 1;
+  const discountRatio = preDiscountGross>0 ? (1 - totals.discountAmt/preDiscountGross) : 1;
+  const items = state.cart.map(i=>({
+    productId:i.productId, name:i.name, price:i.price, qty:i.qty,
+    lineDiscount: i.lineDiscount, lineTotal: Math.round(lineGross(i)*discountRatio*100)/100
+  }));
+  if(state.business.stockTrackingEnabled){
+    state.cart.forEach(i=>{
+      const p = state.products.find(x=>x.id===i.productId);
+      if(p && p.trackStock) p.stock = Math.max(0, p.stock - i.qty);
+    });
+  }
+  const sale = {
+    id: uid(), time: new Date(), staffName: state.currentStaff?.name || 'Unknown', customerId: cust?cust.id:null,
+    items, orderDiscount: state.orderDiscount, discountTotal: totals.discountAmt,
+    exVat: totals.exVat, vat: totals.vat, total: due, grossBeforeRedemption: totals.total,
+    method, tendered, change, splitCash, splitCard, wayShares, cashNet,
+    pointsEarned, pointsRedeemedValue: redemptionValue,
+    refunds: [], refundedTotal: 0, receiptChoice: co.receiptChoice
+  };
+  state.sales.push(sale);
+  state.receipt = sale;
+  state.checkout.open = false;
+  state.cart = []; state.orderDiscount = {type:'none',value:0,reason:''}; state.activeCustomerId = null;
+  render();
 }
 function renderCheckoutModal(){
   const totals = cartTotals();
   const co = state.checkout;
+  const due = dueAfterRedemption(totals);
+  const cust = activeCustomer();
+  const redemptionValue = loyaltyRedemptionValue();
   let body = '';
   if(co.tab==='cash'){
-    const diff = co.tendered - totals.total;
+    const diff = co.tendered - due;
     body = `
       <div class="quick-cash">
-        ${[totals.total, Math.ceil(totals.total/5)*5, Math.ceil(totals.total/10)*10, Math.ceil(totals.total/20)*20].filter((v,i,a)=>a.indexOf(v)===i).slice(0,4).map(v=>`<button onclick="setTendered(${v})">${fmtMoney(v)}</button>`).join('')}
+        ${[due, Math.ceil(due/5)*5, Math.ceil(due/10)*10, Math.ceil(due/20)*20].filter((v,i,a)=>a.indexOf(v)===i).slice(0,4).map(v=>`<button onclick="setTendered(${v})">${fmtMoney(v)}</button>`).join('')}
       </div>
       <div class="field" style="margin-bottom:10px;">
         <label>Amount tendered</label>
@@ -1108,109 +1847,154 @@ function renderCheckoutModal(){
       <div class="card-sim"><div class="spinner"></div><p style="font-size:13px;color:var(--text-soft);">Processing card payment…</p></div>` : `
       <div class="card-sim">
         <div class="cico">💳</div>
-        <p style="font-size:13.5px;color:var(--text-soft);margin-bottom:20px;">Simulate tap, insert or swipe for ${fmtMoney(totals.total)}</p>
+        <p style="font-size:13.5px;color:var(--text-soft);margin-bottom:20px;">Simulate tap, insert or swipe for ${fmtMoney(due)}</p>
         <button class="btn btn-primary btn-lg btn-block" onclick="simulateCardPayment()">Confirm card payment</button>
       </div>`;
   } else if(co.tab==='split'){
-    const card = Math.max(0, totals.total - co.splitCash);
+    const card = Math.max(0, due - co.splitCash);
     body = `
       <div class="field">
         <label>Cash amount</label>
-        <input type="number" step="0.01" min="0" max="${totals.total}" value="${co.splitCash}" oninput="onSplitCashInput(this)">
+        <input type="number" step="0.01" min="0" max="${due}" value="${co.splitCash}" oninput="onSplitCashInput(this)">
       </div>
       <div class="field">
         <label>Card amount (remaining)</label>
         <div class="due-box" style="padding:12px;"><span class="amt" id="split-card-amt" style="font-size:20px;">${fmtMoney(card)}</span></div>
       </div>
       <button class="btn btn-primary btn-lg btn-block" id="confirm-split-btn" onclick="completeSale('split')">Confirm split payment</button>`;
+  } else if(co.tab==='ways'){
+    if(!co.wayShares) buildWayShares();
+    body = `
+      <div class="way-mode-row">
+        <button class="chip ${co.wayMode==='even'?'sel-primary':''}" onclick="setWayMode('even')">Split evenly</button>
+        <button class="chip ${co.wayMode==='item'?'sel-primary':''}" onclick="setWayMode('item')">Split by item</button>
+      </div>
+      <div class="way-count-row">
+        <button onclick="changeWayCount(-1)">−</button>
+        <div class="n">${co.wayCount}</div>
+        <button onclick="changeWayCount(1)">+</button>
+        <span style="font-size:12.5px;color:var(--text-soft);">guests</span>
+      </div>
+      ${co.wayMode==='item' ? `
+      <div style="margin-bottom:14px;max-height:150px;overflow-y:auto;">
+        ${state.cart.map((item,idx)=>`
+          <div class="assign-row">
+            <div class="nm">${esc(item.name)} ×${item.qty}</div>
+            <div class="guest-pick">
+              ${Array.from({length:co.wayCount},(_,g)=>`<button class="${(co.wayAssign[idx]??0)===g?'sel':''}" onclick="assignLineToGuest(${idx},${g})">${g+1}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>` : ''}
+      <div style="max-height:260px;overflow-y:auto;">
+        ${(co.wayShares||[]).map((s,i)=>`
+          <div class="share-card ${s.paid?'paid':''}">
+            <div class="sn">Guest ${s.guest}${s.paid?' ✓ paid ('+s.method+')':''}</div>
+            <div class="sa">${fmtMoney(s.amount)}</div>
+            ${!s.paid ? `<div class="sbtns"><button class="btn btn-secondary btn-sm" onclick="paySlice(${i},'cash')">Cash</button><button class="btn btn-primary btn-sm" onclick="paySlice(${i},'card')">Card</button></div>`:''}
+          </div>`).join('')}
+      </div>`;
   }
   return `
   <div class="modal-overlay" onclick="if(event.target===this) closeCheckout()">
     <div class="modal">
       <div class="modal-head"><h2>Checkout</h2><button class="close" onclick="closeCheckout()">✕</button></div>
       <div class="modal-body">
-        <div class="due-box"><div class="lbl">Amount due</div><div class="amt">${fmtMoney(totals.total)}</div></div>
+        <div class="due-box">
+          <div class="lbl">Amount due</div>
+          <div class="amt">${fmtMoney(due)}</div>
+          ${co.redeemPoints ? `<div class="sub">${fmtMoney(totals.total)} less ${fmtMoney(Math.min(totals.total,redemptionValue))} in points</div>`:''}
+        </div>
+        ${cust && cust.loyaltyPoints>0 && state.business.loyaltyEnabled ? `
+        <div class="loyalty-row">
+          <span>${esc(cust.name)} has <strong>${cust.loyaltyPoints} pts</strong> (worth ${fmtMoney(redemptionValue)})</span>
+          <button class="btn ${co.redeemPoints?'btn-primary':'btn-secondary'} btn-sm" onclick="toggleRedeemPoints()">${co.redeemPoints?'Redeeming ✓':'Redeem all'}</button>
+        </div>`:''}
         <div class="pay-tabs">
           <button class="pay-tab ${co.tab==='cash'?'active':''}" onclick="setPayTab('cash')">Cash</button>
           <button class="pay-tab ${co.tab==='card'?'active':''}" onclick="setPayTab('card')">Card</button>
-          <button class="pay-tab ${co.tab==='split'?'active':''}" onclick="setPayTab('split')">Split</button>
+          <button class="pay-tab ${co.tab==='split'?'active':''}" onclick="setPayTab('split')">Split (amount)</button>
+          <button class="pay-tab ${co.tab==='ways'?'active':''}" onclick="setPayTab('ways')">Split ways</button>
         </div>
         ${body}
       </div>
     </div>
   </div>`;
 }
-function simulateCardPayment(){
-  state.checkout.processing = true; render();
-  setTimeout(()=> completeSale('card'), 1000);
-}
-function completeSale(method){
-  const totals = cartTotals();
-  const co = state.checkout;
-  let tendered=null, change=null, splitCash=null, splitCard=null;
-  if(method==='cash'){ tendered=co.tendered; change=co.tendered-totals.total; }
-  if(method==='split'){ splitCash=co.splitCash; splitCard=Math.max(0,totals.total-co.splitCash); }
-  const sale = {
-    id: uid(), time: new Date(), staffName: state.currentStaff?.name || 'Unknown',
-    items: state.cart.map(i=>({name:i.name, price:i.price, qty:i.qty})),
-    exVat: totals.exVat, vat: totals.vat, total: totals.total,
-    method, tendered, change, splitCash, splitCard
-  };
-  state.sales.push(sale);
-  state.receipt = sale;
-  state.checkout.open = false;
-  state.cart = [];
-  render();
-}
 
 /* ============================ RECEIPT ============================ */
 function renderReceiptModal(){
-  const s = state.receipt; const b = state.business;
-  const payLine = s.method==='cash' ? `Cash · Tendered ${fmtMoney(s.tendered)} · Change ${fmtMoney(s.change)}`
-    : s.method==='card' ? 'Card payment' : `Split · Cash ${fmtMoney(s.splitCash)} + Card ${fmtMoney(s.splitCard)}`;
+  const s = state.receipt; const b = state.business; const r = b.receipt;
+  let payLine;
+  if(s.method==='cash') payLine = `Cash · Tendered ${fmtMoney(s.tendered)} · Change ${fmtMoney(s.change)}`;
+  else if(s.method==='card') payLine = 'Card payment';
+  else if(s.method==='split') payLine = `Split · Cash ${fmtMoney(s.splitCash)} + Card ${fmtMoney(s.splitCard)}`;
+  else payLine = `Split ${s.wayShares.length} ways · ${s.wayShares.map(w=>fmtMoney(w.amount)+' ('+w.method+')').join(', ')}`;
+  const cust = state.customers.find(c=>c.id===s.customerId);
   return `
   <div class="modal-overlay">
-    <div class="modal" style="max-width:380px;">
+    <div class="modal" style="max-width:${r.width==='58mm'?'320px':'380px'};">
       <div class="modal-head"><h2>Sale complete</h2><button class="close" onclick="closeReceipt()">✕</button></div>
       <div class="modal-body" style="padding-top:0;">
-        <div id="receipt-print" class="receipt">
+        <div id="receipt-print" class="receipt" style="max-width:${r.width==='58mm'?'240px':'320px'};">
           <div class="receipt-head">
-            <div class="receipt-logo">${logoNode()}</div>
+            ${r.showLogo ? `<div class="receipt-logo">${logoNode()}</div>` : ''}
             <div class="bn">${esc(b.name)}</div>
-            <div class="meta">${s.time.toLocaleString('en-GB')}<br>Served by ${esc(s.staffName)}</div>
+            ${r.showAddress && r.address ? `<div class="meta">${esc(r.address)}</div>`:''}
+            ${r.showAddress && r.phone ? `<div class="meta">${esc(r.phone)}</div>`:''}
+            <div class="meta">${s.time.toLocaleString('en-GB')}<br>Served by ${esc(s.staffName)}${cust?` · ${esc(cust.name)}`:''}</div>
           </div>
           <div class="receipt-div"></div>
-          ${s.items.map(i=>`<div class="receipt-line"><span class="nm">${esc(i.qty)} × ${esc(i.name)}</span><span>${fmtMoney(i.price*i.qty)}</span></div>`).join('')}
+          ${s.items.map(i=>`<div class="receipt-line"><span class="nm">${esc(i.qty)} × ${esc(i.name)}</span><span>${fmtMoney(i.lineTotal!=null?i.lineTotal:i.price*i.qty)}</span></div>`).join('')}
           <div class="receipt-div"></div>
+          ${s.discountTotal>0?`<div class="receipt-tot"><span>Discount</span><span>−${fmtMoney(s.discountTotal)}</span></div>`:''}
+          ${s.pointsRedeemedValue>0?`<div class="receipt-tot"><span>Loyalty points redeemed</span><span>−${fmtMoney(s.pointsRedeemedValue)}</span></div>`:''}
           <div class="receipt-tot"><span>Subtotal</span><span>${fmtMoney(s.exVat)}</span></div>
           <div class="receipt-tot"><span>VAT</span><span>${fmtMoney(s.vat)}</span></div>
           <div class="receipt-tot grand"><span>Total</span><span>${fmtMoney(s.total)}</span></div>
           <div class="receipt-div"></div>
           <div class="receipt-tot"><span>${payLine}</span></div>
-          <div class="receipt-foot">Thank you!<br>— ${esc(b.name)} —</div>
+          ${s.pointsEarned>0?`<div class="receipt-tot"><span>Points earned this visit</span><span>+${s.pointsEarned}</span></div>`:''}
+          <div class="receipt-foot">${esc(r.footer||'Thank you for your visit!')}<br>— ${esc(b.name)} —</div>
           <div class="perf"></div>
         </div>
-        <div style="display:flex;gap:8px;margin-top:16px;">
-          <button class="btn btn-secondary btn-block" onclick="window.print()">Print receipt</button>
-          <button class="btn btn-primary btn-block" onclick="closeReceipt()">New sale</button>
+        <div class="receipt-choice-row">
+          <button class="btn btn-secondary" onclick="printReceipt()">🖨 Print</button>
+          <button class="btn btn-secondary" onclick="emailReceipt()">✉ Email</button>
+          <button class="btn btn-primary" onclick="closeReceipt()">No receipt / Done</button>
         </div>
       </div>
     </div>
   </div>`;
+}
+function printReceipt(){ state.receipt.receiptChoice='print'; window.print(); }
+function emailReceipt(){
+  const cust = state.customers.find(c=>c.id===state.receipt.customerId);
+  const suggested = cust?.email || '';
+  const email = prompt('Send receipt to which email address?', suggested);
+  if(!email) return;
+  state.receipt.receiptChoice = 'email';
+  toast(`Receipt emailed to ${email} (simulated).`);
 }
 function closeReceipt(){ state.receipt=null; render(); }
 
 /* ============================ CONTROL PANEL ============================ */
 function openControlPanel(){ state.screen='controlpanel'; state.cp.tab='branding'; render(); }
 function backToTill(){ state.screen='till'; render(); }
-function setCpTab(t){ state.cp.tab=t; state.cp.editingProductId=null; state.cp.editingCategoryId=null; state.cp.editingStaffId=null; state.cp.addingProduct=null; render(); }
-
+function setCpTab(t){
+  state.cp.tab=t; state.cp.editingProductId=null; state.cp.editingCategoryId=null; state.cp.editingStaffId=null;
+  state.cp.addingProduct=null; state.cp.addingStaff=false; state.cp.editingCustomerId=null; state.cp.addingCustomer=false;
+  render();
+}
 function renderControlPanel(){
   const nav = [
-    ['branding','🎨','Branding & setup'],
+    ['branding','🎨','Branding & theme'],
     ['catalog', '🧾', typeLabel()+' & categories'],
+    ['stock','📦','Stock control'],
+    ['customers','👤','Customers & loyalty'],
     ['staff','👥','Staff & access'],
-    ['reports','📊','Reports']
+    ['payments','💳','Payments & hardware'],
+    ['reports','📊','Reports'],
+    ['charter','📜','Charter & data']
   ];
   return `
   <div class="cp-wrap">
@@ -1220,23 +2004,28 @@ function renderControlPanel(){
         ${nav.map(([id,icon,label])=>`<button class="${state.cp.tab===id?'active':''}" onclick="setCpTab('${id}')">${icon} ${label}</button>`).join('')}
       </div>
       <div class="cp-sidebar-foot">
+        <span class="tagline">No lock-in · Your data, your hardware</span>
         <button class="btn btn-secondary btn-block btn-sm" onclick="backToTill()">← Back to till</button>
       </div>
     </div>
     <div class="cp-main">
       ${state.cp.tab==='branding' ? renderCpBranding() : ''}
       ${state.cp.tab==='catalog' ? renderCpCatalog() : ''}
+      ${state.cp.tab==='stock' ? renderCpStock() : ''}
+      ${state.cp.tab==='customers' ? renderCpCustomers() : ''}
       ${state.cp.tab==='staff' ? renderCpStaff() : ''}
+      ${state.cp.tab==='payments' ? renderCpPayments() : ''}
       ${state.cp.tab==='reports' ? renderCpReports() : ''}
+      ${state.cp.tab==='charter' ? renderCpCharter() : ''}
     </div>
   </div>`;
 }
 
-/* --- Branding tab --- */
+/* --- Branding & Theme tab --- */
 function renderCpBranding(){
   const b = state.business;
   return `
-  <div class="cp-topbar"><div><h1>Branding &amp; setup</h1><div class="sub">Your business identity across the till, receipts and login screen.</div></div></div>
+  <div class="cp-topbar"><div><h1>Branding &amp; theme</h1><div class="sub">Your business identity across the till, receipts, login screen and customer display — this is the platform's whole point: it should look like yours, not ours.</div></div></div>
   <div class="card section-card">
     <h3>Business details</h3>
     <div class="sc-sub">Shown on the till header, login screen and receipts.</div>
@@ -1245,6 +2034,7 @@ function renderCpBranding(){
       <label>Business type</label>
       ${renderTypePicker({value:b.type, searchValue:state.cp.typeSearch, onSelect:'cpSelectType', onSearch:'onCpTypeSearch', inputId:'cp-type-search'})}
     </div>
+    <div class="field"><label>What should items be called?</label><input type="text" id="cp-itemlabel" placeholder="${PACK_ITEM_LABEL[packMeta()]}" value="${esc(b.itemLabel)}"><div class="hint">Leave blank to use the default for your business type (currently “${typeLabel()}”).</div></div>
     <div class="field-row">
       <div class="field"><label>Currency symbol</label><input type="text" id="cp-currency" maxlength="3" value="${esc(b.currency)}"></div>
       <div class="field"><label>VAT / tax rate (%)</label><input type="number" id="cp-taxrate" min="0" max="100" step="0.5" value="${b.taxRate}"></div>
@@ -1266,23 +2056,81 @@ function renderCpBranding(){
     </div>
   </div>
   <div class="card section-card">
-    <h3>Colours</h3>
-    <div class="sc-sub">Used for buttons, highlights and the till theme. Individual item buttons can override this in the catalog tab.</div>
+    <h3>Colours &amp; style</h3>
+    <div class="sc-sub">Used for buttons, highlights and the till theme. Individual item buttons can override colour in the catalog tab.</div>
     <div class="color-row">
       <div class="color-item"><input type="color" id="cp-primary" value="${b.primaryColor}"><span class="lbl">Primary</span></div>
       <div class="color-item"><input type="color" id="cp-accent" value="${b.accentColor}"><span class="lbl">Accent</span></div>
     </div>
-    <div class="form-actions"><button class="btn btn-primary" onclick="saveCpColors()">Save colours</button></div>
+    <div class="field" style="margin-top:6px;">
+      <label>Corner style</label>
+      <div class="style-grid">
+        ${Object.entries(RADIUS_OPTS).map(([id,o])=>`
+          <div class="style-opt ${b.radius===id?'sel':''}" onclick="cpSetRadius('${id}')">
+            <div class="demo-shape" style="border-radius:${o.m}px"></div>
+            <div class="lbl">${o.label}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="field">
+      <label>Typeface</label>
+      <div class="chip-row">
+        ${FONT_OPTS.map(f=>`<button class="chip ${b.font===f.id?'sel-primary':''}" style="font-family:${f.stack}" onclick="cpSetFont('${f.id}')">${f.label}</button>`).join('')}
+      </div>
+      <div class="hint">${FONT_OPTS.find(f=>f.id===b.font)?.vibe||''}</div>
+    </div>
+    <div class="field">
+      <label>Appearance</label>
+      <div class="chip-row">
+        <button class="chip ${b.darkMode==='auto'?'sel-primary':''}" onclick="cpSetDarkMode('auto')">Match device</button>
+        <button class="chip ${b.darkMode==='light'?'sel-primary':''}" onclick="cpSetDarkMode('light')">Always light</button>
+        <button class="chip ${b.darkMode==='dark'?'sel-primary':''}" onclick="cpSetDarkMode('dark')">Always dark</button>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="saveCpColors()">Save colours &amp; style</button></div>
+  </div>
+  <div class="card section-card">
+    <h3>Receipt template</h3>
+    <div class="sc-sub">What prints (or emails) at the bottom of every sale.</div>
+    <div class="field"><label>Footer message</label><input type="text" id="cp-receipt-footer" value="${esc(b.receipt.footer)}"></div>
+    <div class="toggle-row">
+      <div class="tinfo"><div class="tname">Show logo on receipt</div></div>
+      <div class="switch ${b.receipt.showLogo?'on':''}" onclick="cpToggleReceipt('showLogo')"></div>
+    </div>
+    <div class="toggle-row">
+      <div class="tinfo"><div class="tname">Show address &amp; phone</div></div>
+      <div class="switch ${b.receipt.showAddress?'on':''}" onclick="cpToggleReceipt('showAddress')"></div>
+    </div>
+    ${b.receipt.showAddress ? `
+    <div class="field-row">
+      <div class="field"><label>Address</label><input type="text" id="cp-receipt-address" value="${esc(b.receipt.address)}"></div>
+      <div class="field"><label>Phone</label><input type="text" id="cp-receipt-phone" value="${esc(b.receipt.phone)}"></div>
+    </div>` : ''}
+    <div class="field">
+      <label>Receipt paper width (hardware freedom — any ESC/POS printer)</label>
+      <div class="chip-row">
+        <button class="chip ${b.receipt.width==='58mm'?'sel-primary':''}" onclick="cpSetReceiptWidth('58mm')">58mm</button>
+        <button class="chip ${b.receipt.width==='80mm'?'sel-primary':''}" onclick="cpSetReceiptWidth('80mm')">80mm</button>
+      </div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="saveCpReceipt()">Save receipt template</button></div>
   </div>`;
 }
-function cpSelectType(t){ state.business.type = t; render(); }
+function cpSelectType(t){ syncCpBrandingFields(); state.business.type = t; render(); }
+function cpSetRadius(id){ state.business.radius = id; applyTheme(); render(); }
+function cpSetFont(id){ state.business.font = id; applyTheme(); render(); }
+function cpSetDarkMode(m){ state.business.darkMode = m; applyTheme(); render(); }
+function cpToggleReceipt(key){ state.business.receipt[key] = !state.business.receipt[key]; render(); }
+function cpSetReceiptWidth(w){ state.business.receipt.width = w; render(); }
 function saveCpDetails(){
   const b = state.business;
   b.name = document.getElementById('cp-name').value.trim() || b.name;
+  b.itemLabel = document.getElementById('cp-itemlabel').value.trim();
   b.currency = document.getElementById('cp-currency').value.trim() || b.currency;
   b.taxRate = parseFloat(document.getElementById('cp-taxrate').value) || 0;
   b.taxInclusive = document.getElementById('cp-taxinclusive').checked;
   render();
+  toast('Business details saved.');
 }
 function cpHandleLogoUpload(input){
   const file = input.files[0]; if(!file) return;
@@ -1295,14 +2143,22 @@ function saveCpColors(){
   state.business.primaryColor = document.getElementById('cp-primary').value;
   state.business.accentColor = document.getElementById('cp-accent').value;
   applyTheme(); render();
+  toast('Colours & style saved.');
+}
+function saveCpReceipt(){
+  const r = state.business.receipt;
+  r.footer = document.getElementById('cp-receipt-footer').value.trim();
+  const addrEl = document.getElementById('cp-receipt-address'); if(addrEl) r.address = addrEl.value.trim();
+  const phoneEl = document.getElementById('cp-receipt-phone'); if(phoneEl) r.phone = phoneEl.value.trim();
+  render();
+  toast('Receipt template saved.');
 }
 
 /* --- Catalog tab --- */
 function renderCpCatalog(){
-  const b = state.business;
   return `
   <div class="cp-topbar">
-    <div><h1>${typeLabel()} &amp; categories</h1><div class="sub">Customise every button, price, colour and detail shown at the till.</div></div>
+    <div><h1>${typeLabel()} &amp; categories</h1><div class="sub">Customise every button, price, colour, barcode and detail shown at the till. One engine, configured for your business.</div></div>
     <button class="btn btn-primary" onclick="cpNewCategory()">+ New category</button>
   </div>
   ${state.categories.map(cat=>renderCatBlock(cat)).join('') || `<div class="empty-state"><div class="em">🗂️</div>No categories yet — add one to get started.</div>`}
@@ -1334,7 +2190,10 @@ function renderProdRow(p){
   return `
   <div class="prod-row">
     <div class="swatch" style="background:${p.color}">${p.emoji||'📦'}</div>
-    <div class="pinfo"><div class="pn">${esc(p.name)}</div>${p.details?`<div class="pd">${esc(p.details)}</div>`:''}</div>
+    <div class="pinfo">
+      <div class="pn">${esc(p.name)} ${p.ageRestricted?'<span class="badge badge-warn">18</span>':''}</div>
+      <div class="pd">${p.sku?'SKU '+esc(p.sku)+' · ':''}${p.details?esc(p.details):''}${p.trackStock?` · Stock: ${p.stock}`:''}</div>
+    </div>
     <div class="pp">${fmtMoney(p.price)}</div>
     <div class="prod-actions">
       <button class="icon-btn" onclick="state.cp.editingProductId='${p.id}';render()" title="Edit">✎</button>
@@ -1353,7 +2212,10 @@ function renderProductForm(p, catId){
       <div class="field" style="margin-bottom:10px;"><label>Name</label><input type="text" id="${idBase}-name" value="${esc(p?p.name:'')}" placeholder="Item name"></div>
       <div class="field" style="margin-bottom:10px;max-width:120px;"><label>Price</label><input type="number" step="0.01" min="0" id="${idBase}-price" value="${p?p.price:''}" placeholder="0.00"></div>
     </div>
-    <div class="field" style="margin-bottom:10px;"><label>Details (optional)</label><input type="text" id="${idBase}-details" value="${esc(p?p.details:'')}" placeholder="Shown as a subtitle on the button"></div>
+    <div class="field-row">
+      <div class="field" style="margin-bottom:10px;"><label>Details (optional)</label><input type="text" id="${idBase}-details" value="${esc(p?p.details:'')}" placeholder="Shown as a subtitle on the button"></div>
+      <div class="field" style="margin-bottom:10px;max-width:140px;"><label>SKU / barcode</label><input type="text" id="${idBase}-sku" value="${esc(p?p.sku||'':'')}" placeholder="Optional"></div>
+    </div>
     <div class="field" style="margin-bottom:6px;">
       <label>Button colour</label>
       <div class="swatch-picker">
@@ -1366,6 +2228,20 @@ function renderProductForm(p, catId){
       <input type="text" id="${idBase}-emoji" value="${emoji}" maxlength="2" style="width:60px;text-align:center;font-size:16px;">
       <div class="emoji-row">${EMOJI_SET.map(e=>`<button onclick="document.getElementById('${idBase}-emoji').value='${e}'">${e}</button>`).join('')}</div>
     </div>
+    ${state.business.stockTrackingEnabled ? `
+    <div class="toggle-row" style="border-top:none;padding-top:0;">
+      <div class="tinfo"><div class="tname">Track stock for this item</div><div class="tdesc">Deducts on sale, blocks sale when out of stock.</div></div>
+      <div class="switch ${p&&p.trackStock?'on':''}" id="${idBase}-trackstock-sw" onclick="this.classList.toggle('on')"></div>
+    </div>
+    <div class="field-row">
+      <div class="field" style="margin-bottom:10px;"><label>Current stock</label><input type="number" min="0" id="${idBase}-stock" value="${p?p.stock:0}"></div>
+      <div class="field" style="margin-bottom:10px;"><label>Low stock alert below</label><input type="number" min="0" id="${idBase}-lowstock" value="${p?p.lowStockThreshold:5}"></div>
+    </div>` : ''}
+    ${state.business.ageRestrictionEnabled ? `
+    <div class="toggle-row" style="border-top:none;padding-top:0;">
+      <div class="tinfo"><div class="tname">Age-restricted (18+)</div><div class="tdesc">Triggers a Challenge 25 prompt at the till, logged for licensing evidence.</div></div>
+      <div class="switch ${p&&p.ageRestricted?'on':''}" id="${idBase}-agerestrict-sw" onclick="this.classList.toggle('on')"></div>
+    </div>` : ''}
     <div class="form-actions">
       <button class="btn btn-ghost btn-sm" onclick="${isNew?`state.cp.addingProduct=null;`:`state.cp.editingProductId=null;`}render()">Cancel</button>
       <button class="btn btn-primary btn-sm" onclick="${isNew?`cpSaveNewProduct('${catId}','${idBase}')`:`cpSaveProduct('${p.id}','${idBase}')`}">Save item</button>
@@ -1398,28 +2274,33 @@ function cpDeleteCategory(id){
   render();
 }
 function cpAddProduct(catId){ state.cp.addingProduct = catId; state.cp.editingProductId=null; render(); }
-function cpSaveNewProduct(catId, idBase){
+function readProductFormFields(idBase){
   const name = document.getElementById(idBase+'-name').value.trim();
   const price = parseFloat(document.getElementById(idBase+'-price').value);
-  if(!name || isNaN(price) || price<0){ alert('Please enter a valid name and price.'); return; }
-  state.products.push({
-    id: uid(), categoryId: catId, name, price,
-    color: document.getElementById(idBase+'-color').value,
-    emoji: document.getElementById(idBase+'-emoji').value.trim(),
-    details: document.getElementById(idBase+'-details').value.trim()
-  });
+  const details = document.getElementById(idBase+'-details').value.trim();
+  const sku = document.getElementById(idBase+'-sku').value.trim();
+  const color = document.getElementById(idBase+'-color').value;
+  const emoji = document.getElementById(idBase+'-emoji').value.trim();
+  const trackStockEl = document.getElementById(idBase+'-trackstock-sw');
+  const trackStock = trackStockEl ? trackStockEl.classList.contains('on') : false;
+  const stock = document.getElementById(idBase+'-stock') ? parseInt(document.getElementById(idBase+'-stock').value)||0 : 0;
+  const lowStockThreshold = document.getElementById(idBase+'-lowstock') ? parseInt(document.getElementById(idBase+'-lowstock').value)||5 : 5;
+  const ageEl = document.getElementById(idBase+'-agerestrict-sw');
+  const ageRestricted = ageEl ? ageEl.classList.contains('on') : false;
+  return {name, price, details, sku, color, emoji, trackStock, stock, lowStockThreshold, ageRestricted};
+}
+function cpSaveNewProduct(catId, idBase){
+  const f = readProductFormFields(idBase);
+  if(!f.name || isNaN(f.price) || f.price<0){ alert('Please enter a valid name and price.'); return; }
+  state.products.push({ id: uid(), categoryId: catId, ...f });
   state.cp.addingProduct = null;
   render();
 }
 function cpSaveProduct(id, idBase){
   const p = state.products.find(x=>x.id===id);
-  const name = document.getElementById(idBase+'-name').value.trim();
-  const price = parseFloat(document.getElementById(idBase+'-price').value);
-  if(!name || isNaN(price) || price<0){ alert('Please enter a valid name and price.'); return; }
-  p.name = name; p.price = price;
-  p.color = document.getElementById(idBase+'-color').value;
-  p.emoji = document.getElementById(idBase+'-emoji').value.trim();
-  p.details = document.getElementById(idBase+'-details').value.trim();
+  const f = readProductFormFields(idBase);
+  if(!f.name || isNaN(f.price) || f.price<0){ alert('Please enter a valid name and price.'); return; }
+  Object.assign(p, f);
   state.cp.editingProductId = null;
   render();
 }
@@ -1429,11 +2310,160 @@ function cpDeleteProduct(id){
   render();
 }
 
+/* --- Stock control tab --- */
+function renderCpStock(){
+  const b = state.business;
+  if(!b.stockTrackingEnabled){
+    return `
+    <div class="cp-topbar"><div><h1>Stock control</h1><div class="sub">Live stock levels, low-stock alerts, stock takes and wastage recording.</div></div></div>
+    <div class="card section-card" style="text-align:center;padding:40px 24px;">
+      <div style="font-size:30px;margin-bottom:10px;">📦</div>
+      <h3 style="margin-bottom:8px;">Stock tracking is off</h3>
+      <p style="color:var(--text-soft);font-size:13.5px;margin-bottom:18px;max-width:420px;margin-left:auto;margin-right:auto;">Turn it on, then flag which items to track from the ${typeLabel().toLowerCase()} tab. Items you don't track behave exactly as before.</p>
+      <button class="btn btn-primary" onclick="cpEnableStock()">Turn on stock tracking</button>
+    </div>`;
+  }
+  const tracked = state.products.filter(p=>p.trackStock);
+  const low = tracked.filter(p=>p.stock<=p.lowStockThreshold);
+  return `
+  <div class="cp-topbar"><div><h1>Stock control</h1><div class="sub">${tracked.length} item${tracked.length===1?'':'s'} tracked · ${low.length} low or out of stock.</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="cpDisableStock()">Turn off stock tracking</button>
+  </div>
+  ${low.length ? `<div class="card section-card" style="border-color:var(--warn);">
+    <h3>⚠ Low stock</h3><div class="sc-sub">Below their configured threshold.</div>
+    ${low.map(p=>`<div class="bar-row"><div class="bn">${esc(p.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,p.stock/(p.lowStockThreshold||1)*100)}%;background:var(--danger);"></div></div><div class="bv">${p.stock} left</div></div>`).join('')}
+  </div>`:''}
+  <div class="card section-card">
+    <h3>All tracked items</h3><div class="sc-sub">Adjust stock, run a stock take, or record wastage.</div>
+    ${tracked.length ? `<table class="data-table"><thead><tr><th>Item</th><th>SKU</th><th>Stock</th><th>Alert below</th><th></th></tr></thead><tbody>
+      ${tracked.map(p=>`
+        <tr>
+          <td>${esc(p.name)}</td><td style="font-family:var(--font-mono);">${esc(p.sku||'—')}</td>
+          <td style="font-family:var(--font-mono);font-weight:700;${p.stock<=p.lowStockThreshold?'color:var(--danger);':''}">${p.stock}</td>
+          <td style="font-family:var(--font-mono);">${p.lowStockThreshold}</td>
+          <td>
+            <div class="prod-actions">
+              <button class="icon-btn" title="Adjust +1" onclick="cpAdjustStock('${p.id}',1)">+</button>
+              <button class="icon-btn" title="Adjust -1" onclick="cpAdjustStock('${p.id}',-1)">−</button>
+              <button class="btn btn-secondary btn-sm" onclick="cpStockTake('${p.id}')">Stock take</button>
+              <button class="btn btn-warn btn-sm" onclick="cpWastage('${p.id}')">Wastage</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+    </tbody></table>` : `<p style="color:var(--text-mute);font-size:13px;">No items are flagged for tracking yet — edit an item in the ${typeLabel().toLowerCase()} tab and switch on “Track stock”.</p>`}
+  </div>`;
+}
+function cpEnableStock(){ state.business.stockTrackingEnabled = true; render(); toast('Stock tracking turned on.'); }
+function cpDisableStock(){ if(!confirm('Turn off stock tracking? Existing stock numbers are kept but no longer enforced.')) return; state.business.stockTrackingEnabled = false; render(); }
+function cpAdjustStock(id, delta){
+  const p = state.products.find(x=>x.id===id); if(!p) return;
+  p.stock = Math.max(0, p.stock + delta); render();
+}
+function cpStockTake(id){
+  const p = state.products.find(x=>x.id===id); if(!p) return;
+  const v = prompt(`Stock take for ${p.name} — enter the counted quantity:`, p.stock);
+  if(v===null) return;
+  const n = parseInt(v); if(isNaN(n)||n<0){ alert('Enter a valid whole number.'); return; }
+  p.stock = n; render(); toast('Stock take recorded.');
+}
+function cpWastage(id){
+  const p = state.products.find(x=>x.id===id); if(!p) return;
+  const v = prompt(`Record wastage for ${p.name} — how many to remove?`, 1);
+  if(v===null) return;
+  const n = parseInt(v); if(isNaN(n)||n<=0){ alert('Enter a valid whole number.'); return; }
+  const reason = prompt('Reason (optional):', 'Damaged') || 'Not given';
+  p.stock = Math.max(0, p.stock - n);
+  render();
+  toast(`${n} × ${p.name} written off (${reason}).`);
+}
+
+/* --- Customers & loyalty tab --- */
+function renderCpCustomers(){
+  const b = state.business;
+  return `
+  <div class="cp-topbar">
+    <div><h1>Customers &amp; loyalty</h1><div class="sub">Lightweight CRM and a points scheme — attach a customer at the till to earn and redeem points.</div></div>
+    <button class="btn btn-primary" onclick="cpAddCustomerForm()">+ Add customer</button>
+  </div>
+  <div class="card section-card">
+    <h3>Loyalty scheme</h3>
+    <div class="toggle-row" style="border-top:none;">
+      <div class="tinfo"><div class="tname">Loyalty points</div><div class="tdesc">Customers earn points on every sale and can redeem them at checkout.</div></div>
+      <div class="switch ${b.loyaltyEnabled?'on':''}" onclick="cpToggleLoyalty()"></div>
+    </div>
+    ${b.loyaltyEnabled ? `
+    <div class="field-row" style="margin-top:10px;">
+      <div class="field"><label>Points earned per £1 spent</label><input type="number" min="0" step="0.5" id="cp-points-rate" value="${b.pointsPerPound}"></div>
+      <div class="field"><label>Value of 1 point (pence)</label><input type="number" min="0" step="0.5" id="cp-point-value" value="${b.pointValuePence}"></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="cpSaveLoyalty()">Save loyalty settings</button></div>`:''}
+  </div>
+  <div class="card section-card">
+    ${state.cp.addingCustomer ? renderCustomerForm(null) : ''}
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Contact</th><th>Visits</th><th>Total spend</th><th>Points</th><th></th></tr></thead>
+      <tbody>
+        ${state.customers.map(c => state.cp.editingCustomerId===c.id ? `<tr><td colspan="6">${renderCustomerForm(c)}</td></tr>` : `
+          <tr>
+            <td>${esc(c.name)}</td>
+            <td>${esc(c.phone||c.email||'—')}</td>
+            <td>${c.visits||0}</td>
+            <td style="font-family:var(--font-mono);">${fmtMoney(c.totalSpend||0)}</td>
+            <td style="font-family:var(--font-mono);">${c.loyaltyPoints||0}</td>
+            <td><div class="prod-actions"><button class="icon-btn" onclick="state.cp.editingCustomerId='${c.id}';render()">✎</button><button class="icon-btn" onclick="cpDeleteCustomer('${c.id}')">🗑</button></div></td>
+          </tr>`).join('') || '<tr><td colspan="6" style="color:var(--text-mute);">No customers yet.</td></tr>'}
+      </tbody>
+    </table>
+  </div>`;
+}
+function cpToggleLoyalty(){ state.business.loyaltyEnabled = !state.business.loyaltyEnabled; render(); }
+function cpSaveLoyalty(){
+  state.business.pointsPerPound = parseFloat(document.getElementById('cp-points-rate').value)||0;
+  state.business.pointValuePence = parseFloat(document.getElementById('cp-point-value').value)||0;
+  render(); toast('Loyalty settings saved.');
+}
+function cpAddCustomerForm(){ state.cp.addingCustomer = true; render(); }
+function renderCustomerForm(c){
+  const isNew = !c;
+  const idBase = isNew ? 'new-cust' : 'edit-cust-'+c.id;
+  return `
+  <div class="edit-form">
+    <div class="field-row">
+      <div class="field" style="margin-bottom:10px;"><label>Name</label><input type="text" id="${idBase}-name" value="${esc(c?c.name:'')}"></div>
+      <div class="field" style="margin-bottom:10px;"><label>Phone</label><input type="tel" id="${idBase}-phone" value="${esc(c?c.phone:'')}"></div>
+      <div class="field" style="margin-bottom:10px;"><label>Email</label><input type="email" id="${idBase}-email" value="${esc(c?c.email:'')}"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost btn-sm" onclick="${isNew?'state.cp.addingCustomer=false;':'state.cp.editingCustomerId=null;'}render()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="${isNew?`cpSaveNewCustomer('${idBase}')`:`cpSaveCustomer('${c.id}','${idBase}')`}">Save customer</button>
+    </div>
+  </div>`;
+}
+function cpSaveNewCustomer(idBase){
+  const name = document.getElementById(idBase+'-name').value.trim();
+  if(!name){ alert('Please enter a name.'); return; }
+  state.customers.push({ id:uid(), name, phone:document.getElementById(idBase+'-phone').value.trim(), email:document.getElementById(idBase+'-email').value.trim(), loyaltyPoints:0, visits:0, totalSpend:0 });
+  state.cp.addingCustomer = false; render();
+}
+function cpSaveCustomer(id, idBase){
+  const c = state.customers.find(x=>x.id===id);
+  const name = document.getElementById(idBase+'-name').value.trim();
+  if(!name){ alert('Please enter a name.'); return; }
+  c.name = name; c.phone = document.getElementById(idBase+'-phone').value.trim(); c.email = document.getElementById(idBase+'-email').value.trim();
+  state.cp.editingCustomerId = null; render();
+}
+function cpDeleteCustomer(id){
+  if(!confirm('Remove this customer? Their loyalty history will be lost.')) return;
+  state.customers = state.customers.filter(x=>x.id!==id);
+  if(state.activeCustomerId===id) state.activeCustomerId = null;
+  render();
+}
+
 /* --- Staff tab --- */
 function renderCpStaff(){
   return `
   <div class="cp-topbar">
-    <div><h1>Staff &amp; access</h1><div class="sub">Admins can open the control panel. Cashiers can only use the till.</div></div>
+    <div><h1>Staff &amp; access</h1><div class="sub">Admins can open the control panel and approve manager actions. Cashiers can only use the till.</div></div>
     <button class="btn btn-primary" onclick="cpAddStaffForm()">+ Add staff</button>
   </div>
   <div class="card section-card">
@@ -1507,38 +2537,112 @@ function cpDeleteStaff(id){
   render();
 }
 
+/* --- Payments & hardware tab --- */
+function renderCpPayments(){
+  const b = state.business;
+  return `
+  <div class="cp-topbar"><div><h1>Payments &amp; hardware</h1><div class="sub">Processor-neutral by design — pick whichever acquirer suits you, and switch whenever you like.</div></div></div>
+  <div class="card section-card">
+    <h3>Card payment processor</h3>
+    <div class="sc-sub">This choice is cosmetic in the prototype, but the platform's payments layer is built so the sales screen never knows or cares which acquirer is behind it.</div>
+    <div class="proc-grid">
+      ${PROCESSORS.map(p=>`
+        <div class="proc-opt ${b.paymentProcessor===p.id?'sel':''}" onclick="cpSelectProcessor('${p.id}')">
+          <div class="pn">${esc(p.name)}</div>
+          <div class="pr">${esc(p.rate)}</div>
+        </div>`).join('')}
+    </div>
+    <div class="hint">${esc(PROCESSORS.find(p=>p.id===b.paymentProcessor)?.note||'')} No exit fees for switching, ever.</div>
+  </div>
+  <div class="card section-card">
+    <h3>Connected hardware (simulated)</h3>
+    <div class="sc-sub">Runs on standard Android, iOS or Windows devices with any ESC/POS-compatible printer — no proprietary lock-in.</div>
+    <div class="toggle-row" style="border-top:none;"><div class="tinfo"><div class="tname">Receipt printer</div><div class="tdesc">USB / Bluetooth / network</div></div><span class="badge" style="background:var(--success-light);color:var(--success);">Connected</span></div>
+    <div class="toggle-row"><div class="tinfo"><div class="tname">Cash drawer</div></div><span class="badge" style="background:var(--success-light);color:var(--success);">Connected</span></div>
+    <div class="toggle-row"><div class="tinfo"><div class="tname">Card terminal</div><div class="tdesc">Store-and-forward when offline, where the acquirer permits</div></div><span class="badge" style="background:var(--success-light);color:var(--success);">Connected</span></div>
+    <div class="toggle-row"><div class="tinfo"><div class="tname">Barcode scanner</div></div><span class="badge" style="background:var(--success-light);color:var(--success);">Connected</span></div>
+  </div>`;
+}
+function cpSelectProcessor(id){ state.business.paymentProcessor = id; render(); toast('Payment processor updated — no contract change needed.'); }
+
 /* --- Reports tab --- */
+function lastCashUpTime(){
+  return state.cashUps.length ? state.cashUps[state.cashUps.length-1].time : new Date(0);
+}
+function calcExpectedCashSince(since){
+  let cash = 0;
+  state.sales.forEach(s=>{
+    if(s.time > since) cash += (s.cashNet||0);
+    (s.refunds||[]).forEach(r=>{ if(r.time > since && r.tender==='cash') cash -= r.total; });
+  });
+  return Math.round(cash*100)/100;
+}
+function buildInsights(){
+  const insights = [];
+  const sales = state.sales;
+  if(!sales.length){ insights.push({ic:'💡', text:'Ring up a few sales and this panel will start surfacing plain-English observations from your own data — nothing sent anywhere.'}); return insights; }
+  const byCat = {};
+  sales.forEach(sale => sale.items.forEach(it=>{
+    const prod = state.products.find(p=>p.id===it.productId || p.name===it.name);
+    const catName = prod ? (state.categories.find(c=>c.id===prod.categoryId)?.name || 'Other') : 'Other';
+    byCat[catName] = (byCat[catName]||0) + (it.lineTotal!=null?it.lineTotal:it.price*it.qty);
+  }));
+  const bestCat = Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  if(bestCat) insights.push({ic:'📈', text:`“${bestCat[0]}” is your best-selling category this session, at ${fmtMoney(bestCat[1])}.`});
+  const byHour = {};
+  sales.forEach(s=>{ const h=s.time.getHours(); byHour[h]=(byHour[h]||0)+1; });
+  const busiest = Object.entries(byHour).sort((a,b)=>b[1]-a[1])[0];
+  if(busiest) insights.push({ic:'⏰', text:`Your busiest hour so far is ${busiest[0]}:00–${(+busiest[0]+1)%24}:00, with ${busiest[1]} sale${busiest[1]===1?'':'s'}.`});
+  if(state.business.stockTrackingEnabled){
+    const low = state.products.filter(p=>p.trackStock && p.stock<=p.lowStockThreshold);
+    if(low.length) insights.push({ic:'📦', text:`Stock running low on ${low.map(p=>p.name).join(', ')} — worth a reorder soon.`});
+  }
+  const refundCount = sales.reduce((a,s)=>a+(s.refunds||[]).length,0);
+  if(refundCount>0) insights.push({ic:'↩️', text:`${refundCount} refund${refundCount===1?'':'s'} recorded this session — check the reason codes below if a pattern emerges.`});
+  const avgSale = sales.reduce((a,s)=>a+s.total,0)/sales.length;
+  insights.push({ic:'🧾', text:`Average sale value is ${fmtMoney(avgSale)} across ${sales.length} transaction${sales.length===1?'':'s'}.`});
+  return insights;
+}
 function renderCpReports(){
   const sales = state.sales;
   const totalRevenue = sales.reduce((s,x)=>s+x.total,0);
+  const totalRefunded = sales.reduce((s,x)=>s+(x.refundedTotal||0),0);
   const count = sales.length;
   const avg = count ? totalRevenue/count : 0;
-  const byMethod = {cash:0, card:0, split:0};
-  sales.forEach(s=> byMethod[s.method] += s.total);
+  const byMethod = {cash:0, card:0, split:0, 'split-ways':0};
+  sales.forEach(s=> byMethod[s.method] = (byMethod[s.method]||0) + s.total);
   const byCat = {};
   sales.forEach(sale => sale.items.forEach(it=>{
-    const prod = state.products.find(p=>p.name===it.name);
+    const prod = state.products.find(p=>p.id===it.productId || p.name===it.name);
     const catName = prod ? (state.categories.find(c=>c.id===prod.categoryId)?.name || 'Other') : 'Other';
-    byCat[catName] = (byCat[catName]||0) + it.price*it.qty;
+    byCat[catName] = (byCat[catName]||0) + (it.lineTotal!=null?it.lineTotal:it.price*it.qty);
   }));
   const maxCat = Math.max(1, ...Object.values(byCat));
+  const expectedCash = calcExpectedCashSince(lastCashUpTime());
   return `
   <div class="cp-topbar">
-    <div><h1>Reports</h1><div class="sub">Live totals for this session.</div></div>
-    ${sales.length ? `<div style="display:flex;gap:8px;">
-      <button class="btn btn-secondary btn-sm" onclick="exportSalesCsv()">⬇ Export CSV</button>
-      <button class="btn btn-secondary btn-sm" onclick="exportSalesPdf()">⬇ Export PDF</button>
-    </div>` : ''}
+    <div><h1>Reports</h1><div class="sub">Live totals for this till, held locally.</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-accent btn-sm" onclick="openCashUp()">🧮 Cash up / Z-report</button>
+      ${sales.length ? `<button class="btn btn-secondary btn-sm" onclick="exportSalesCsv()">⬇ Export CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportSalesPdf()">⬇ Export PDF</button>` : ''}
+    </div>
   </div>
   <div class="stat-grid">
     <div class="card stat-card"><div class="lbl">Revenue</div><div class="val">${fmtMoney(totalRevenue)}</div></div>
     <div class="card stat-card"><div class="lbl">Transactions</div><div class="val">${count}</div></div>
     <div class="card stat-card"><div class="lbl">Average sale</div><div class="val">${fmtMoney(avg)}</div></div>
+    <div class="card stat-card"><div class="lbl">Refunded</div><div class="val">${fmtMoney(totalRefunded)}</div></div>
+    <div class="card stat-card"><div class="lbl">Expected cash in drawer</div><div class="val">${fmtMoney(expectedCash)}</div></div>
+  </div>
+  <div class="card section-card">
+    <h3>💡 Insights <span style="font-weight:500;color:var(--text-mute);font-size:11.5px;">— explainable, computed only from this till's own data</span></h3>
+    <div class="insight-list">${buildInsights().map(i=>`<div class="insight-item"><span class="ic">${i.ic}</span><span>${i.text}</span></div>`).join('')}</div>
   </div>
   <div class="card section-card">
     <h3>By payment method</h3><div class="sc-sub">Split of revenue across payment types.</div>
-    ${['cash','card','split'].map(m=>`
-      <div class="bar-row"><div class="bn" style="text-transform:capitalize;">${m}</div><div class="bar-track"><div class="bar-fill" style="width:${totalRevenue?(byMethod[m]/totalRevenue*100):0}%"></div></div><div class="bv">${fmtMoney(byMethod[m])}</div></div>`).join('')}
+    ${['cash','card','split','split-ways'].filter(m=>byMethod[m]).map(m=>`
+      <div class="bar-row"><div class="bn" style="text-transform:capitalize;">${m.replace('-',' ')}</div><div class="bar-track"><div class="bar-fill" style="width:${totalRevenue?(byMethod[m]/totalRevenue*100):0}%"></div></div><div class="bv">${fmtMoney(byMethod[m])}</div></div>`).join('') || '<p style="color:var(--text-mute);font-size:13px;">No sales yet.</p>'}
   </div>
   <div class="card section-card">
     <h3>By category</h3><div class="sc-sub">Which categories are driving sales.</div>
@@ -1546,31 +2650,94 @@ function renderCpReports(){
       <div class="bar-row"><div class="bn">${esc(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${val/maxCat*100}%"></div></div><div class="bv">${fmtMoney(val)}</div></div>`).join('') : `<p style="color:var(--text-mute);font-size:13px;">No sales yet this session.</p>`}
   </div>
   <div class="card section-card">
-    <h3>Recent transactions</h3><div class="sc-sub">Tap a row to see the full breakdown.</div>
-    ${sales.length ? `<table class="data-table"><thead><tr><th>Time</th><th>Staff</th><th>Items</th><th>Payment</th><th>Total</th></tr></thead><tbody>
+    <h3>Recent transactions</h3><div class="sc-sub">Tap a row to see the full breakdown, issue a refund, or check age-verification logs.</div>
+    ${sales.length ? `<table class="data-table"><thead><tr><th>Time</th><th>Staff</th><th>Items</th><th>Payment</th><th>Total</th><th></th></tr></thead><tbody>
       ${sales.slice().reverse().map(s=>`
         <tr class="txn-row" onclick="toggleTxn('${s.id}')">
           <td>${s.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td>
           <td>${esc(s.staffName)}</td>
           <td>${s.items.reduce((a,i)=>a+i.qty,0)} items</td>
-          <td style="text-transform:capitalize;">${s.method}</td>
-          <td style="font-family:var(--font-mono);">${fmtMoney(s.total)}</td>
+          <td style="text-transform:capitalize;">${s.method.replace('-',' ')}</td>
+          <td style="font-family:var(--font-mono);">${fmtMoney(s.total)}${s.refundedTotal>0?` <span class="badge badge-danger">−${fmtMoney(s.refundedTotal)}</span>`:''}</td>
+          <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openRefundModal('${s.id}')">Refund</button></td>
         </tr>
-        ${state.cp.expandedTxn===s.id ? `<tr><td colspan="5"><div class="txn-detail">${s.items.map(i=>`${i.qty} × ${esc(i.name)} — ${fmtMoney(i.price*i.qty)}`).join('<br>')}</div></td></tr>` : ''}
+        ${state.cp.expandedTxn===s.id ? `<tr><td colspan="6"><div class="txn-detail">
+          ${s.items.map(i=>`${i.qty} × ${esc(i.name)} — ${fmtMoney(i.lineTotal!=null?i.lineTotal:i.price*i.qty)}`).join('<br>')}
+          ${s.refunds && s.refunds.length ? '<br><br><strong>Refunds:</strong><br>' + s.refunds.map(r=>`${r.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} — ${fmtMoney(r.total)} (${esc(r.reason)}, to ${r.tender})`).join('<br>') : ''}
+        </div></td></tr>` : ''}
       `).join('')}
     </tbody></table>` : `<p style="color:var(--text-mute);font-size:13px;">No sales recorded yet — head to the till and ring something up.</p>`}
-  </div>`;
+  </div>
+  ${state.business.ageRestrictionEnabled && state.ageChecks.length ? `
+  <div class="card section-card">
+    <h3>Age verification log</h3><div class="sc-sub">Challenge 25 checks, kept as licensing evidence.</div>
+    <table class="data-table"><thead><tr><th>Time</th><th>Item</th><th>Staff</th><th>Result</th></tr></thead><tbody>
+      ${state.ageChecks.slice().reverse().slice(0,20).map(a=>`<tr><td>${a.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${esc(a.productName)}</td><td>${esc(a.staffName)}</td><td><span class="badge ${a.result==='confirmed'?'badge-admin':'badge-danger'}">${a.result}</span></td></tr>`).join('')}
+    </tbody></table>
+  </div>`:''}
+  ${state.voids.length || state.noSales.length ? `
+  <div class="card section-card">
+    <h3>Audit trail — voids &amp; no-sales</h3><div class="sc-sub">Every one of these required manager approval.</div>
+    ${state.voids.map(v=>`<div class="bar-row"><div class="bn" style="width:150px;">${v.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div><div style="flex:1;font-size:12.5px;">Void ${fmtMoney(v.total)} by ${esc(v.staffName)} — ${esc(v.reason)}</div></div>`).join('')}
+    ${state.noSales.map(n=>`<div class="bar-row"><div class="bn" style="width:150px;">${n.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div><div style="flex:1;font-size:12.5px;">No-sale by ${esc(n.staffName)}</div></div>`).join('')}
+  </div>`:''}
+  ${state.cashUps.length ? `
+  <div class="card section-card">
+    <h3>Cash-up history</h3>
+    <table class="data-table"><thead><tr><th>Time</th><th>Staff</th><th>Expected</th><th>Declared</th><th>Variance</th></tr></thead><tbody>
+      ${state.cashUps.slice().reverse().map(c=>`<tr><td>${c.time.toLocaleString('en-GB')}</td><td>${esc(c.staffName)}</td><td style="font-family:var(--font-mono);">${fmtMoney(c.expected)}</td><td style="font-family:var(--font-mono);">${fmtMoney(c.declared)}</td><td style="font-family:var(--font-mono);${c.variance<0?'color:var(--danger);':c.variance>0?'color:var(--success);':''}">${c.variance>=0?'+':''}${fmtMoney(c.variance)}</td></tr>`).join('')}
+    </tbody></table>
+  </div>`:''}
+  `;
 }
 function toggleTxn(id){ state.cp.expandedTxn = state.cp.expandedTxn===id ? null : id; render(); }
+
+/* --- Cash up / Z-report --- */
+let cashUpDeclared = 0;
+function openCashUp(){
+  cashUpDeclared = 0;
+  const expected = calcExpectedCashSince(lastCashUpTime());
+  const modalHtml = `
+  <div class="modal-overlay" id="cashup-overlay" onclick="if(event.target===this) closeCashUp()">
+    <div class="modal">
+      <div class="modal-head"><h2>Cash up / Z-report</h2><button class="close" onclick="closeCashUp()">✕</button></div>
+      <div class="modal-body">
+        <div class="due-box"><div class="lbl">Expected cash in drawer</div><div class="amt">${fmtMoney(expected)}</div><div class="sub">Since the last cash-up</div></div>
+        <div class="field"><label>Declared cash counted</label><input type="number" step="0.01" min="0" id="cashup-declared" value="0" oninput="patchCashUpVariance(${expected})"></div>
+        <div class="change-box" id="cashup-variance-box"><span class="lbl">Variance</span><span class="amt">${fmtMoney(-expected)}</span></div>
+        <button class="btn btn-primary btn-lg btn-block" onclick="confirmCashUp(${expected})">Record cash-up</button>
+      </div>
+    </div>
+  </div>`;
+  const div = document.createElement('div'); div.innerHTML = modalHtml;
+  document.getElementById('app').appendChild(div.firstElementChild);
+}
+function patchCashUpVariance(expected){
+  const declared = parseFloat(document.getElementById('cashup-declared').value)||0;
+  const variance = Math.round((declared-expected)*100)/100;
+  const box = document.getElementById('cashup-variance-box');
+  box.classList.toggle('neg', variance<0);
+  box.querySelector('.amt').textContent = (variance>=0?'+':'')+fmtMoney(variance);
+}
+function closeCashUp(){ document.getElementById('cashup-overlay')?.remove(); }
+function confirmCashUp(expected){
+  const declared = parseFloat(document.getElementById('cashup-declared').value)||0;
+  requireManagerPin('Confirm cash-up of '+fmtMoney(declared), ()=>{
+    state.cashUps.push({id:uid(), time:new Date(), staffName:state.currentStaff?.name||'', expected, declared, variance:Math.round((declared-expected)*100)/100});
+    closeCashUp();
+    render();
+    toast('Cash-up recorded.');
+  });
+}
 
 /* --- Report exports --- */
 function csvCell(v){ v = String(v??''); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
 function exportSalesCsv(){
-  const rows = [['Transaction','Time','Staff','Item','Qty','Unit price','Line total','Payment method','Sale total']];
+  const rows = [['Transaction','Time','Staff','Item','Qty','Unit price','Line total','Payment method','Sale total','Refunded']];
   state.sales.forEach((s,idx)=>{
     s.items.forEach(it=>{
       rows.push([ idx+1, s.time.toLocaleString('en-GB'), s.staffName, it.name, it.qty,
-        it.price.toFixed(2), (it.price*it.qty).toFixed(2), s.method, s.total.toFixed(2) ]);
+        it.price.toFixed(2), (it.lineTotal!=null?it.lineTotal:it.price*it.qty).toFixed(2), s.method, s.total.toFixed(2), (s.refundedTotal||0).toFixed(2) ]);
     });
   });
   const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
@@ -1582,15 +2749,15 @@ function exportSalesPdf(){
   const totalRevenue = state.sales.reduce((s,x)=>s+x.total,0);
   const count = state.sales.length;
   const avg = count ? totalRevenue/count : 0;
-  const byMethod = {cash:0,card:0,split:0};
-  state.sales.forEach(s=>byMethod[s.method]+=s.total);
+  const byMethod = {cash:0,card:0,split:0,'split-ways':0};
+  state.sales.forEach(s=>byMethod[s.method]=(byMethod[s.method]||0)+s.total);
   const win = window.open('', '_blank');
-  if(!win){ alert('Please allow pop-ups to export the PDF, then use your browser\u2019s Save as PDF option.'); return; }
+  if(!win){ alert('Please allow pop-ups to export the PDF, then use your browser’s Save as PDF option.'); return; }
   const rowsHtml = state.sales.slice().reverse().map(s=>`
     <tr>
       <td>${s.time.toLocaleString('en-GB')}</td>
       <td>${esc(s.staffName)}</td>
-      <td>${s.items.map(i=>esc(i.qty+' \u00d7 '+i.name)).join('<br>')}</td>
+      <td>${s.items.map(i=>esc(i.qty+' × '+i.name)).join('<br>')}</td>
       <td style="text-transform:capitalize">${s.method}</td>
       <td style="text-align:right;font-family:monospace">${fmtMoney(s.total)}</td>
     </tr>`).join('');
@@ -1614,7 +2781,7 @@ function exportSalesPdf(){
         <div class="stat"><div class="l">Transactions</div><div class="v">${count}</div></div>
         <div class="stat"><div class="l">Average sale</div><div class="v">${fmtMoney(avg)}</div></div>
       </div>
-      <div class="pay">Cash ${fmtMoney(byMethod.cash)} · Card ${fmtMoney(byMethod.card)} · Split ${fmtMoney(byMethod.split)}</div>
+      <div class="pay">Cash ${fmtMoney(byMethod.cash)} · Card ${fmtMoney(byMethod.card)} · Split ${fmtMoney(byMethod.split)} · Split ways ${fmtMoney(byMethod['split-ways'])}</div>
       <table><thead><tr><th>Time</th><th>Staff</th><th>Items</th><th>Payment</th><th style="text-align:right">Total</th></tr></thead>
       <tbody>${rowsHtml}</tbody></table>
       <script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script>
@@ -1627,13 +2794,189 @@ function downloadBlob(blob, filename){
   a.href = url; a.download = filename; document.body.appendChild(a); a.click();
   document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 1000);
 }
+function exportCatalogCsv(){
+  const rows = [['Category','Name','Price','SKU','Track stock','Stock','Age restricted']];
+  state.products.forEach(p=>{
+    const cat = state.categories.find(c=>c.id===p.categoryId);
+    rows.push([cat?cat.name:'', p.name, p.price.toFixed(2), p.sku||'', p.trackStock?'yes':'no', p.trackStock?p.stock:'', p.ageRestricted?'yes':'no']);
+  });
+  const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8;'}), sanitizeName(state.business.name)+'-catalogue-'+dateStamp()+'.csv');
+}
 function sanitizeName(n){ return (n||'business').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
 function dateStamp(){ const d=new Date(); return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
 
+/* --- Refunds --- */
+function openRefundModal(saleId){
+  const sale = state.sales.find(s=>s.id===saleId); if(!sale) return;
+  state.refund = { open:true, saleId, qtys:{}, reason:'Customer changed mind', tender: sale.method==='card'?'card':'cash' };
+  render();
+}
+function closeRefundModal(){ state.refund = {open:false, saleId:null, qtys:{}, reason:'Customer changed mind', tender:'cash'}; render(); }
+function setRefundQty(idx, val){ state.refund.qtys[idx] = Math.max(0, parseInt(val)||0); render(); }
+function setRefundReason(v){ state.refund.reason = v; }
+function setRefundTender(t){ state.refund.tender = t; render(); }
+function refundTotalNow(sale){
+  let total = 0;
+  sale.items.forEach((it,idx)=>{
+    const q = Math.min(it.qty - (it.refundedQty||0), state.refund.qtys[idx]||0);
+    total += (it.lineTotal/it.qty) * q;
+  });
+  return Math.round(total*100)/100;
+}
+function renderRefundModal(){
+  const sale = state.sales.find(s=>s.id===state.refund.saleId); if(!sale) return '';
+  const total = refundTotalNow(sale);
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeRefundModal()">
+    <div class="modal modal-lg">
+      <div class="modal-head"><h2>Refund sale</h2><button class="close" onclick="closeRefundModal()">✕</button></div>
+      <div class="modal-body">
+        <p style="font-size:12.5px;color:var(--text-mute);margin-bottom:14px;">Linked to the original transaction from ${sale.time.toLocaleString('en-GB')}. Choose how many of each line to refund.</p>
+        <table class="data-table" style="margin-bottom:16px;">
+          <thead><tr><th>Item</th><th>Sold</th><th>Already refunded</th><th>Refund qty</th></tr></thead>
+          <tbody>
+            ${sale.items.map((it,idx)=>{
+              const already = it.refundedQty||0; const remaining = it.qty - already;
+              return `<tr><td>${esc(it.name)}</td><td>${it.qty}</td><td>${already}</td><td><input type="number" min="0" max="${remaining}" style="width:70px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);" value="${state.refund.qtys[idx]||0}" oninput="setRefundQty(${idx}, this.value)" ${remaining<=0?'disabled':''}></td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div class="field-row">
+          <div class="field">
+            <label>Reason</label>
+            <select id="refund-reason" onchange="setRefundReason(this.value)">
+              ${['Customer changed mind','Faulty item','Wrong item given','Duplicate charge','Other'].map(r=>`<option ${state.refund.reason===r?'selected':''}>${r}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field">
+            <label>Refund to</label>
+            <div class="chip-row">
+              <button class="chip ${state.refund.tender==='cash'?'sel-primary':''}" onclick="setRefundTender('cash')">Cash</button>
+              <button class="chip ${state.refund.tender==='card'?'sel-primary':''}" onclick="setRefundTender('card')">Card</button>
+            </div>
+          </div>
+        </div>
+        <div class="due-box" style="margin-bottom:16px;"><div class="lbl">Refund total</div><div class="amt">${fmtMoney(total)}</div></div>
+        <button class="btn btn-danger btn-lg btn-block" ${total<=0?'disabled':''} onclick="confirmRefund()">Process refund</button>
+      </div>
+    </div>
+  </div>`;
+}
+function confirmRefund(){
+  const sale = state.sales.find(s=>s.id===state.refund.saleId); if(!sale) return;
+  const total = refundTotalNow(sale);
+  if(total<=0) return;
+  const reasonEl = document.getElementById('refund-reason');
+  const reason = reasonEl ? reasonEl.value : state.refund.reason;
+  const tender = state.refund.tender;
+  const qtys = {...state.refund.qtys};
+  requireManagerPin('Approve refund of '+fmtMoney(total), ()=>{
+    sale.items.forEach((it,idx)=>{ const q = qtys[idx]||0; if(q>0) it.refundedQty = (it.refundedQty||0)+q; });
+    sale.refunds = sale.refunds || [];
+    sale.refunds.push({id:uid(), time:new Date(), reason, tender, total, staffName:state.currentStaff?.name||''});
+    sale.refundedTotal = Math.round(((sale.refundedTotal||0)+total)*100)/100;
+    if(state.business.stockTrackingEnabled){
+      sale.items.forEach((it,idx)=>{
+        const q = qtys[idx]||0; if(q<=0) return;
+        const p = state.products.find(x=>x.id===it.productId);
+        if(p && p.trackStock) p.stock += q;
+      });
+    }
+    closeRefundModal();
+    render();
+    toast(`Refund of ${fmtMoney(total)} processed and logged.`);
+  });
+}
+
+/* --- Charter & data tab --- */
+function renderCpCharter(){
+  return `
+  <div class="cp-topbar"><div><h1>Charter &amp; data</h1><div class="sub">The commitments this platform makes — and won't break, because it isn't built on lock-in revenue.</div></div></div>
+  <div class="card section-card">
+    <h3>The customer charter</h3>
+    <div class="charter-list">
+      ${CHARTER.map((c,i)=>`<div class="charter-item"><div class="num">${i+1}</div><div class="txt">${esc(c)}</div></div>`).join('')}
+    </div>
+  </div>
+  <div class="card section-card">
+    <h3>Your data, portable on demand</h3>
+    <div class="sc-sub">Full export of products, customers and transaction history in open formats — free, any time, no ticket required.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="exportAllDataJson()">⬇ Export everything (JSON)</button>
+      <button class="btn btn-secondary" onclick="exportCatalogCsv()">⬇ Export catalogue (CSV)</button>
+      <button class="btn btn-secondary" onclick="exportSalesCsv()">⬇ Export sales (CSV)</button>
+    </div>
+  </div>
+  <div class="card section-card">
+    <h3>Import</h3>
+    <div class="sc-sub">Restore or migrate a previous export onto this device.</div>
+    <button class="btn btn-secondary file-btn">Choose a JSON export to import<input type="file" accept="application/json" onchange="importAllDataJson(this)"></button>
+  </div>
+  <div class="card section-card" style="border-color:var(--danger);">
+    <h3 style="color:var(--danger);">Wipe local data</h3>
+    <div class="sc-sub">Deletes everything stored on this device — products, sales, staff, customers and settings. Export a backup first.</div>
+    <button class="btn btn-danger" onclick="wipeAllData()">Wipe all local data</button>
+  </div>
+  <div class="card section-card">
+    <h3>Offline &amp; storage status</h3>
+    <div class="toggle-row" style="border-top:none;"><div class="tinfo"><div class="tname">Connection</div><div class="tdesc">The till keeps trading fully with no connection — this only affects the status pill.</div></div><span class="status-pill ${state.online?'':'off'}"><span class="dot"></span>${state.online?'Online':'Offline'}</span></div>
+    <div class="toggle-row"><div class="tinfo"><div class="tname">Local storage</div><div class="tdesc">Every sale, product and setting is written to this device first, and only synced when a connection is available.</div></div><span class="badge" style="background:var(--success-light);color:var(--success);">Active</span></div>
+  </div>`;
+}
+
+/* ============================ CUSTOMER-FACING DISPLAY ============================ */
+function renderCustomerDisplay(){
+  const b = state.business;
+  const totals = cartTotals();
+  return `
+  <div class="display-screen">
+    <div class="dlogo">${logoNode()}</div>
+    <h1>${esc(b.name)}</h1>
+    ${state.cart.length ? `
+    <div class="dlines">
+      ${state.cart.map(i=>`<div class="dline"><span>${i.qty} × ${esc(i.name)}</span><span>${fmtMoney(lineGross(i))}</span></div>`).join('')}
+    </div>
+    <div class="dtotal">${fmtMoney(totals.total)}</div>
+    <div class="dsub">incl. VAT</div>
+    ` : `<div class="dsub" style="font-size:20px;margin-top:20px;">Welcome — your order will appear here.</div>`}
+  </div>`;
+}
+function initCustomerDisplayIfNeeded(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('display')==='1'){
+    state.screen = 'display';
+    render();
+    window.addEventListener('storage', (e)=>{
+      if(e.key===STORAGE_KEY){
+        const loaded = loadState();
+        if(loaded){ state.business = loaded.business; state.cart = loaded.cart; state.categories = loaded.categories; render(); }
+      }
+    });
+    return true;
+  }
+  return false;
+}
+
 /* ============================ INIT ============================ */
-applyTheme();
-render();
-setInterval(()=>{ const el = document.getElementById('th-clock'); if(el) el.textContent = new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'}); }, 30000);
+(function init(){
+  const isDisplay = initCustomerDisplayIfNeeded();
+  if(isDisplay) return;
+  const loaded = loadState();
+  if(loaded) state = loaded;
+  applyTheme();
+  render();
+  window.addEventListener('online', ()=>{ state.online = true; if(state.screen==='till') render(); });
+  window.addEventListener('offline', ()=>{ state.online = false; if(state.screen==='till') render(); });
+  setInterval(()=>{ const el = document.getElementById('th-clock'); if(el) el.textContent = new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'}); }, 30000);
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('sw.js').catch(()=>{ /* offline mode still works via local storage even if the service worker can't register */ });
+    });
+  }
+  // Read-only debug accessor (browser console convenience only — never used internally).
+  window.__debugState = () => state;
+})();
 </script>
 </body>
 </html>
