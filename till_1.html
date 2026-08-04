@@ -318,6 +318,258 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 const PALETTE = ['#0D9488','#4F46E5','#DB2777','#DC2626','#D97706','#65A30D','#0891B2','#7C3AED','#111827','#6B7280'];
 const EMOJI_SET = ['☕','🍵','🥤','🍔','🥪','🍕','🍰','🥐','🍪','🍜','👕','👜','🧴','💇','✂️','💅','🔧','🛠️','🧾','🎟️','📦','🛒'];
 
+/* ---------- Business type catalogue (searchable, grouped) ---------- */
+const BIZ_TYPE_GROUPS = [
+  { group:'Retail & Shops', types:[
+    {id:'retail', emo:'🛍️', label:'Retail shop', desc:'General retail & barcodes'},
+    {id:'convenience-store', emo:'🏪', label:'Convenience store', desc:'Everyday essentials'},
+    {id:'supermarket', emo:'🛒', label:'Supermarket / grocery', desc:'Grocery & household'},
+    {id:'clothing-boutique', emo:'👗', label:'Clothing boutique', desc:'Fashion & apparel'},
+    {id:'shoe-shop', emo:'👟', label:'Shoe shop', desc:'Footwear'},
+    {id:'jewellery-store', emo:'💍', label:'Jewellery store', desc:'Jewellery & watches'},
+    {id:'bookshop', emo:'📚', label:'Bookshop', desc:'Books & stationery'},
+    {id:'toy-shop', emo:'🧸', label:'Toy shop', desc:'Toys & games'},
+    {id:'electronics-store', emo:'🔌', label:'Electronics store', desc:'Gadgets & appliances'},
+    {id:'mobile-phone-shop', emo:'📱', label:'Mobile phone shop', desc:'Phones & accessories'},
+    {id:'furniture-store', emo:'🛋️', label:'Furniture store', desc:'Furniture & homeware'},
+    {id:'homeware-gifts', emo:'🎁', label:'Homeware & gifts', desc:'Gifts & home décor'},
+    {id:'hardware-store', emo:'🔧', label:'Hardware store', desc:'Tools & DIY supplies'},
+    {id:'garden-centre', emo:'🌿', label:'Garden centre', desc:'Plants & outdoor'},
+    {id:'pet-shop', emo:'🐾', label:'Pet shop', desc:'Pet food & supplies'},
+    {id:'florist', emo:'💐', label:'Florist', desc:'Flowers & bouquets'},
+    {id:'off-licence', emo:'🍷', label:'Off-licence / liquor store', desc:'Wine, beer & spirits'},
+    {id:'butcher', emo:'🥩', label:'Butcher', desc:'Fresh meat'},
+    {id:'baker', emo:'🥖', label:'Bakery (retail)', desc:'Bread & baked goods'},
+    {id:'greengrocer', emo:'🥦', label:'Greengrocer', desc:'Fruit & veg'},
+    {id:'deli', emo:'🧀', label:'Delicatessen', desc:'Deli & fine foods'},
+    {id:'farm-shop', emo:'🚜', label:'Farm shop', desc:'Local produce'},
+    {id:'charity-shop', emo:'♻️', label:'Charity shop', desc:'Second-hand goods'},
+    {id:'pawn-shop', emo:'💰', label:'Pawn shop', desc:'Loans & resale'},
+    {id:'vape-shop', emo:'💨', label:'Vape shop', desc:'E-cigarettes & liquids'},
+    {id:'tobacconist', emo:'🚬', label:'Tobacconist', desc:'Tobacco & accessories'},
+    {id:'art-craft-supplies', emo:'🎨', label:'Art & craft supplies', desc:'Art materials'},
+    {id:'stationery-shop', emo:'✏️', label:'Stationery shop', desc:'Paper & office supplies'},
+    {id:'sports-outdoor-shop', emo:'🏀', label:'Sports & outdoor shop', desc:'Sports equipment'},
+    {id:'music-shop', emo:'🎸', label:'Music shop', desc:'Instruments & records'},
+    {id:'vintage-store', emo:'👘', label:'Vintage / second-hand store', desc:'Pre-owned fashion'},
+    {id:'discount-store', emo:'🏷️', label:'Discount / variety store', desc:'Budget goods'},
+    {id:'department-store', emo:'🏬', label:'Department store', desc:'Multi-category retail'},
+    {id:'newsstand-kiosk', emo:'📰', label:'Newsstand / kiosk', desc:'Papers, snacks & odds'},
+    {id:'mattress-bed-shop', emo:'🛏️', label:'Bed & mattress shop', desc:'Beds & bedding'},
+    {id:'carpet-flooring-shop', emo:'🧶', label:'Carpet & flooring shop', desc:'Flooring materials'},
+    {id:'paint-decorating-shop', emo:'🖌️', label:'Paint & decorating shop', desc:'Paint & wallpaper'},
+    {id:'baby-shop', emo:'🍼', label:'Baby & maternity shop', desc:'Baby products'},
+    {id:'costume-party-shop', emo:'🎉', label:'Party & costume shop', desc:'Party supplies'},
+    {id:'luggage-shop', emo:'🧳', label:'Luggage & travel goods', desc:'Bags & luggage'}
+  ]},
+  { group:'Food & Drink', types:[
+    {id:'cafe', emo:'☕', label:'Café / Coffee shop', desc:'Food & drink orders'},
+    {id:'restaurant', emo:'🍽️', label:'Restaurant', desc:'Table service dining'},
+    {id:'fast-food', emo:'🍔', label:'Fast food', desc:'Quick service meals'},
+    {id:'takeaway', emo:'🥡', label:'Takeaway', desc:'Food to go'},
+    {id:'food-truck', emo:'🚚', label:'Food truck', desc:'Mobile food service'},
+    {id:'bakery-cafe', emo:'🥐', label:'Bakery-café', desc:'Baked goods & coffee'},
+    {id:'pizzeria', emo:'🍕', label:'Pizzeria', desc:'Pizza & sides'},
+    {id:'bar-pub', emo:'🍺', label:'Bar / pub', desc:'Drinks & bar snacks'},
+    {id:'wine-bar', emo:'🍷', label:'Wine bar', desc:'Wine & tapas'},
+    {id:'nightclub', emo:'🎶', label:'Nightclub', desc:'Late-night venue'},
+    {id:'ice-cream-parlour', emo:'🍦', label:'Ice cream parlour', desc:'Ice cream & desserts'},
+    {id:'juice-bar', emo:'🧃', label:'Juice / smoothie bar', desc:'Juices & smoothies'},
+    {id:'sandwich-shop', emo:'🥪', label:'Sandwich shop', desc:'Made-to-order sandwiches'},
+    {id:'fish-chip-shop', emo:'🍟', label:'Fish & chip shop', desc:'Fried fish & chips'},
+    {id:'bubble-tea-shop', emo:'🧋', label:'Bubble tea shop', desc:'Bubble tea & drinks'},
+    {id:'diner', emo:'🍳', label:'Diner', desc:'All-day breakfast & meals'},
+    {id:'buffet-restaurant', emo:'🍛', label:'Buffet restaurant', desc:'All-you-can-eat'},
+    {id:'catering-company', emo:'🍱', label:'Catering company', desc:'Event catering'},
+    {id:'brewery-taproom', emo:'🍻', label:'Brewery taproom', desc:'Craft beer'},
+    {id:'distillery', emo:'🥃', label:'Distillery', desc:'Spirits tasting'},
+    {id:'cidery', emo:'🍏', label:'Cidery', desc:'Cider tasting'},
+    {id:'street-food-stall', emo:'🌭', label:'Street food stall', desc:'Market food stall'},
+    {id:'dessert-bar', emo:'🍮', label:'Dessert bar', desc:'Desserts & sweets'},
+    {id:'donut-shop', emo:'🍩', label:'Donut shop', desc:'Donuts & pastries'},
+    {id:'steakhouse', emo:'🥩', label:'Steakhouse', desc:'Grilled meats'},
+    {id:'sushi-bar', emo:'🍣', label:'Sushi bar', desc:'Sushi & Japanese food'},
+    {id:'noodle-bar', emo:'🍜', label:'Noodle bar', desc:'Noodle dishes'},
+    {id:'kebab-shop', emo:'🌯', label:'Kebab shop', desc:'Kebabs & wraps'},
+    {id:'chicken-shop', emo:'🍗', label:'Chicken shop', desc:'Fried chicken'},
+    {id:'pancake-house', emo:'🥞', label:'Pancake / waffle house', desc:'Pancakes & waffles'},
+    {id:'tea-room', emo:'🍵', label:'Tea room', desc:'Tea & light bites'},
+    {id:'cocktail-bar', emo:'🍸', label:'Cocktail bar', desc:'Cocktails & spirits'},
+    {id:'food-hall-stall', emo:'🍲', label:'Food hall stall', desc:'Shared dining space vendor'},
+    {id:'bbq-smokehouse', emo:'🍖', label:'BBQ / smokehouse', desc:'Smoked & grilled meats'},
+    {id:'vegan-eatery', emo:'🥗', label:'Vegan / vegetarian eatery', desc:'Plant-based food'}
+  ]},
+  { group:'Health & Beauty', types:[
+    {id:'salon', emo:'💇', label:'Hair salon', desc:'Appointments & treatments'},
+    {id:'barbershop', emo:'💈', label:'Barbershop', desc:'Haircuts & grooming'},
+    {id:'nail-salon', emo:'💅', label:'Nail salon', desc:'Manicures & pedicures'},
+    {id:'beauty-salon', emo:'🧖', label:'Beauty salon', desc:'Beauty treatments'},
+    {id:'spa', emo:'🛁', label:'Spa', desc:'Relaxation & treatments'},
+    {id:'massage-therapy', emo:'💆', label:'Massage therapy', desc:'Therapeutic massage'},
+    {id:'tanning-salon', emo:'🌞', label:'Tanning salon', desc:'Sunbeds & spray tan'},
+    {id:'tattoo-studio', emo:'🖋️', label:'Tattoo studio', desc:'Tattoo artistry'},
+    {id:'piercing-studio', emo:'💎', label:'Piercing studio', desc:'Body piercing'},
+    {id:'waxing-studio', emo:'🕯️', label:'Waxing studio', desc:'Hair removal'},
+    {id:'lash-brow-bar', emo:'👁️', label:'Eyebrow & lash bar', desc:'Lashes & brows'},
+    {id:'makeup-studio', emo:'💄', label:'Makeup studio', desc:'Makeup services'},
+    {id:'aesthetics-clinic', emo:'💉', label:'Aesthetics clinic', desc:'Cosmetic treatments'},
+    {id:'physiotherapy-clinic', emo:'🩹', label:'Physiotherapy clinic', desc:'Physio treatments'},
+    {id:'chiropractor', emo:'🦴', label:'Chiropractor', desc:'Spinal treatments'},
+    {id:'osteopath', emo:'🦴', label:'Osteopath', desc:'Musculoskeletal care'},
+    {id:'acupuncture-clinic', emo:'📍', label:'Acupuncture clinic', desc:'Acupuncture treatments'},
+    {id:'dentist', emo:'🦷', label:'Dentist', desc:'Dental care'},
+    {id:'optician', emo:'👓', label:'Optician', desc:'Eye tests & glasses'},
+    {id:'pharmacy', emo:'💊', label:'Pharmacy', desc:'Medicines & health products'},
+    {id:'health-food-store', emo:'🥑', label:'Health food store', desc:'Healthy & organic food'},
+    {id:'supplement-shop', emo:'🧪', label:'Vitamin & supplement shop', desc:'Vitamins & supplements'},
+    {id:'yoga-studio', emo:'🧘', label:'Yoga studio', desc:'Yoga classes'},
+    {id:'pilates-studio', emo:'🤸', label:'Pilates studio', desc:'Pilates classes'},
+    {id:'gym-fitness-centre', emo:'🏋️', label:'Gym / fitness centre', desc:'Memberships & classes'},
+    {id:'personal-training-studio', emo:'💪', label:'Personal training studio', desc:'1:1 training'},
+    {id:'nutritionist', emo:'🥗', label:'Nutritionist', desc:'Diet consultations'},
+    {id:'podiatrist', emo:'🦶', label:'Podiatrist', desc:'Foot care'},
+    {id:'counselling-practice', emo:'🗣️', label:'Counselling practice', desc:'Therapy sessions'},
+    {id:'sports-therapy-clinic', emo:'🏃', label:'Sports therapy clinic', desc:'Sports injury care'}
+  ]},
+  { group:'Professional & Financial Services', types:[
+    {id:'accountancy-firm', emo:'🧮', label:'Accountancy firm', desc:'Accounts & bookkeeping'},
+    {id:'bookkeeping-service', emo:'📒', label:'Bookkeeping service', desc:'Financial record keeping'},
+    {id:'law-firm', emo:'⚖️', label:'Law firm', desc:'Legal services'},
+    {id:'notary', emo:'🖊️', label:'Notary public', desc:'Document certification'},
+    {id:'insurance-broker', emo:'🛡️', label:'Insurance broker', desc:'Insurance policies'},
+    {id:'financial-advisor', emo:'📈', label:'Financial advisor', desc:'Financial planning'},
+    {id:'estate-agency', emo:'🏠', label:'Estate agency', desc:'Property sales'},
+    {id:'letting-agency', emo:'🔑', label:'Letting agency', desc:'Property lettings'},
+    {id:'mortgage-broker', emo:'🏦', label:'Mortgage broker', desc:'Mortgage advice'},
+    {id:'recruitment-agency', emo:'🧑‍💼', label:'Recruitment agency', desc:'Staffing & hiring'},
+    {id:'marketing-agency', emo:'📣', label:'Marketing agency', desc:'Marketing services'},
+    {id:'design-studio', emo:'🖌️', label:'Design studio', desc:'Graphic & product design'},
+    {id:'photography-studio', emo:'📷', label:'Photography studio', desc:'Photo sessions'},
+    {id:'printing-shop', emo:'🖨️', label:'Printing shop', desc:'Printing services'},
+    {id:'copy-print-centre', emo:'📠', label:'Copy & print centre', desc:'Copying & printing'},
+    {id:'it-support-repair', emo:'💻', label:'IT support / repair shop', desc:'Computer repairs'},
+    {id:'web-design-agency', emo:'🌐', label:'Web design agency', desc:'Websites & apps'},
+    {id:'translation-service', emo:'🈂️', label:'Translation service', desc:'Language translation'},
+    {id:'tutoring-centre', emo:'📖', label:'Tutoring centre', desc:'Academic tutoring'},
+    {id:'driving-school', emo:'🚗', label:'Driving school', desc:'Driving lessons'},
+    {id:'travel-agency', emo:'✈️', label:'Travel agency', desc:'Holiday bookings'},
+    {id:'currency-exchange', emo:'💱', label:'Currency exchange', desc:'Foreign exchange'},
+    {id:'consulting-firm', emo:'🧑‍💻', label:'Consulting firm', desc:'Business consulting'},
+    {id:'hr-consultancy', emo:'🧑‍🤝‍🧑', label:'HR consultancy', desc:'HR services'},
+    {id:'architecture-firm', emo:'📐', label:'Architecture firm', desc:'Building design'}
+  ]},
+  { group:'Home, Trade & Construction', types:[
+    {id:'plumber', emo:'🔧', label:'Plumber', desc:'Plumbing services'},
+    {id:'electrician', emo:'💡', label:'Electrician', desc:'Electrical services'},
+    {id:'builder-contractor', emo:'🏗️', label:'Builder / contractor', desc:'General building work'},
+    {id:'carpenter-joiner', emo:'🪚', label:'Carpenter / joiner', desc:'Woodwork & fittings'},
+    {id:'painter-decorator', emo:'🖌️', label:'Painter & decorator', desc:'Painting & decorating'},
+    {id:'locksmith', emo:'🔐', label:'Locksmith', desc:'Lock & key services'},
+    {id:'glazier', emo:'🪟', label:'Glazier', desc:'Glass & window fitting'},
+    {id:'roofer', emo:'🏠', label:'Roofer', desc:'Roofing services'},
+    {id:'landscaper-gardener', emo:'🌳', label:'Landscaper / gardener', desc:'Garden design & upkeep'},
+    {id:'cleaning-service', emo:'🧹', label:'Cleaning service', desc:'Domestic & commercial cleaning'},
+    {id:'removals-company', emo:'📦', label:'Removals / moving company', desc:'Home & office removals'},
+    {id:'pest-control', emo:'🐜', label:'Pest control', desc:'Pest treatments'},
+    {id:'handyman-service', emo:'🛠️', label:'Handyman service', desc:'General repairs'},
+    {id:'hvac-heating-engineer', emo:'🌡️', label:'Heating / HVAC engineer', desc:'Heating & cooling'},
+    {id:'tiler', emo:'🧱', label:'Tiler', desc:'Tiling services'},
+    {id:'flooring-specialist', emo:'🪵', label:'Flooring specialist', desc:'Floor fitting'},
+    {id:'kitchen-fitter', emo:'🍳', label:'Kitchen fitter', desc:'Kitchen installation'},
+    {id:'window-fitter', emo:'🪟', label:'Window fitter', desc:'Window installation'},
+    {id:'scaffolding-company', emo:'🏗️', label:'Scaffolding company', desc:'Scaffold hire & erection'},
+    {id:'skip-hire', emo:'🗑️', label:'Skip hire', desc:'Waste skip rental'}
+  ]},
+  { group:'Automotive', types:[
+    {id:'car-dealership', emo:'🚗', label:'Car dealership', desc:'New & used cars'},
+    {id:'car-repair-garage', emo:'🔩', label:'Car repair garage', desc:'Vehicle repairs'},
+    {id:'mot-testing-station', emo:'✅', label:'MOT testing station', desc:'MOT tests'},
+    {id:'tyre-shop', emo:'🛞', label:'Tyre shop', desc:'Tyres & wheels'},
+    {id:'car-wash', emo:'🚿', label:'Car wash', desc:'Vehicle washing'},
+    {id:'car-valeting', emo:'🧽', label:'Car valeting', desc:'Interior & exterior detailing'},
+    {id:'auto-parts-shop', emo:'⚙️', label:'Auto parts shop', desc:'Vehicle parts'},
+    {id:'motorbike-dealer-repair', emo:'🏍️', label:'Motorbike dealer / repair', desc:'Motorbike sales & service'},
+    {id:'bicycle-shop', emo:'🚲', label:'Bicycle shop', desc:'Bikes & repairs'},
+    {id:'vehicle-rental', emo:'🚙', label:'Vehicle rental', desc:'Car & van hire'},
+    {id:'petrol-station', emo:'⛽', label:'Petrol station', desc:'Fuel & forecourt shop'},
+    {id:'body-shop', emo:'🎨', label:'Body shop / paint & panel', desc:'Bodywork repairs'}
+  ]},
+  { group:'Leisure & Entertainment', types:[
+    {id:'cinema', emo:'🎬', label:'Cinema', desc:'Film screenings'},
+    {id:'bowling-alley', emo:'🎳', label:'Bowling alley', desc:'Ten-pin bowling'},
+    {id:'arcade', emo:'🕹️', label:'Arcade', desc:'Arcade games'},
+    {id:'escape-room', emo:'🔐', label:'Escape room', desc:'Puzzle experiences'},
+    {id:'mini-golf', emo:'⛳', label:'Mini golf', desc:'Crazy golf'},
+    {id:'trampoline-park', emo:'🤸', label:'Trampoline park', desc:'Trampolining'},
+    {id:'soft-play-centre', emo:'🧸', label:'Soft play centre', desc:'Children\'s play'},
+    {id:'museum-shop', emo:'🏛️', label:'Museum / attraction shop', desc:'Gift shop & tickets'},
+    {id:'theatre-box-office', emo:'🎭', label:'Theatre box office', desc:'Show tickets'},
+    {id:'snooker-pool-hall', emo:'🎱', label:'Snooker / pool hall', desc:'Cue sports'},
+    {id:'karaoke-bar', emo:'🎤', label:'Karaoke bar', desc:'Karaoke rooms'},
+    {id:'casino', emo:'🎰', label:'Casino', desc:'Gaming tables & machines'},
+    {id:'betting-shop', emo:'🎲', label:'Betting shop', desc:'Sports betting'},
+    {id:'golf-club', emo:'⛳', label:'Golf club / driving range', desc:'Golf memberships & rounds'},
+    {id:'climbing-centre', emo:'🧗', label:'Climbing centre', desc:'Indoor climbing'},
+    {id:'ice-rink', emo:'⛸️', label:'Ice rink', desc:'Ice skating'},
+    {id:'swimming-pool', emo:'🏊', label:'Swimming pool', desc:'Swim sessions'},
+    {id:'event-venue', emo:'🎪', label:'Event venue', desc:'Venue hire'},
+    {id:'wedding-venue', emo:'💒', label:'Wedding venue', desc:'Wedding hire'},
+    {id:'photo-booth-hire', emo:'📸', label:'Photo booth hire', desc:'Event photo booths'}
+  ]},
+  { group:'Education & Childcare', types:[
+    {id:'nursery-daycare', emo:'🍼', label:'Nursery / daycare', desc:'Early years childcare'},
+    {id:'after-school-club', emo:'🎒', label:'After-school club', desc:'After-school care'},
+    {id:'language-school', emo:'🗣️', label:'Language school', desc:'Language courses'},
+    {id:'music-school', emo:'🎹', label:'Music school', desc:'Music lessons'},
+    {id:'dance-school', emo:'💃', label:'Dance school', desc:'Dance classes'},
+    {id:'driving-instructor', emo:'🚗', label:'Driving instructor', desc:'Independent driving lessons'},
+    {id:'training-provider', emo:'🎓', label:'Training provider', desc:'Professional courses'},
+    {id:'childminder', emo:'🧒', label:'Childminder', desc:'Home childcare'}
+  ]},
+  { group:'Technology & Digital', types:[
+    {id:'computer-repair-shop', emo:'🖥️', label:'Computer repair shop', desc:'PC & laptop repairs'},
+    {id:'phone-repair-shop', emo:'📱', label:'Phone repair shop', desc:'Phone screen & repairs'},
+    {id:'software-company', emo:'🧑‍💻', label:'Software company', desc:'Software products'},
+    {id:'app-development-studio', emo:'📲', label:'App development studio', desc:'Mobile & web apps'},
+    {id:'gaming-cafe', emo:'🎮', label:'Gaming café', desc:'Gaming stations & drinks'},
+    {id:'internet-cafe', emo:'🌐', label:'Internet café', desc:'Internet access & printing'},
+    {id:'video-production-studio', emo:'🎥', label:'Video production studio', desc:'Video & film work'},
+    {id:'recording-studio', emo:'🎚️', label:'Recording studio', desc:'Music recording'}
+  ]},
+  { group:'Agriculture & Outdoor', types:[
+    {id:'plant-nursery', emo:'🌱', label:'Plant nursery', desc:'Plants & seedlings'},
+    {id:'farmers-market-stall', emo:'🧺', label:'Farmers market stall', desc:'Local produce stall'},
+    {id:'fishing-tackle-shop', emo:'🎣', label:'Fishing tackle shop', desc:'Fishing gear'},
+    {id:'camping-outdoor-shop', emo:'⛺', label:'Camping / outdoor shop', desc:'Outdoor gear'},
+    {id:'equestrian-supplies', emo:'🐴', label:'Equestrian supplies', desc:'Horse riding gear'}
+  ]},
+  { group:'Transport & Logistics', types:[
+    {id:'taxi-firm', emo:'🚕', label:'Taxi firm', desc:'Taxi bookings'},
+    {id:'courier-service', emo:'📦', label:'Courier service', desc:'Parcel delivery'},
+    {id:'self-storage-facility', emo:'🗄️', label:'Self-storage facility', desc:'Storage units'},
+    {id:'warehouse-logistics', emo:'🚛', label:'Warehouse / logistics', desc:'Storage & distribution'}
+  ]},
+  { group:'Pets & Animals', types:[
+    {id:'veterinary-clinic', emo:'🐕‍🦺', label:'Veterinary clinic', desc:'Animal healthcare'},
+    {id:'pet-grooming', emo:'✂️', label:'Pet grooming', desc:'Grooming services'},
+    {id:'dog-walking-pet-sitting', emo:'🐕', label:'Dog walking / pet sitting', desc:'Pet care services'},
+    {id:'pet-boarding-kennels', emo:'🏠', label:'Pet boarding / kennels', desc:'Overnight pet care'},
+    {id:'aquarium-fish-shop', emo:'🐠', label:'Aquarium & fish shop', desc:'Fish & tanks'}
+  ]},
+  { group:'General & Other', types:[
+    {id:'general', emo:'🧾', label:'General purpose', desc:'A bit of everything'},
+    {id:'market-stall', emo:'🏪', label:'Market stall', desc:'Multi-item stall'},
+    {id:'pop-up-shop', emo:'🛍️', label:'Pop-up shop', desc:'Temporary retail'},
+    {id:'vending-business', emo:'🥤', label:'Vending business', desc:'Vending machines'},
+    {id:'community-centre', emo:'🏢', label:'Community centre', desc:'Community services'},
+    {id:'membership-club', emo:'🎫', label:'Club / membership organisation', desc:'Memberships & events'},
+    {id:'other-not-listed', emo:'❓', label:'Other / not listed', desc:'Custom business type'}
+  ]}
+];
+const TYPE_BY_ID = {};
+let TYPE_COUNT = 0;
+BIZ_TYPE_GROUPS.forEach(g => g.types.forEach(t => { TYPE_BY_ID[t.id] = t; TYPE_COUNT++; }));
+
 function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
 
 function seedState(){
@@ -401,13 +653,38 @@ function typeLabel(){
   return {retail:'Products', cafe:'Menu Items', salon:'Services', general:'Items'}[state.business.type] || 'Items';
 }
 function typeMeta(t){
-  return {
-    retail:{emo:'🛍️', label:'Retail shop', desc:'Products & barcodes'},
-    cafe:{emo:'☕', label:'Café / Restaurant', desc:'Food & drink orders'},
-    salon:{emo:'💇', label:'Salon / Services', desc:'Appointments & treatments'},
-    general:{emo:'🧾', label:'General purpose', desc:'A bit of everything'}
-  }[t];
+  return TYPE_BY_ID[t] || TYPE_BY_ID.general;
 }
+function renderTypePicker(opts){
+  const q = opts.searchValue.trim().toLowerCase();
+  let shown = 0;
+  const body = BIZ_TYPE_GROUPS.map(g=>{
+    const items = g.types.filter(t => !q || t.label.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q) || g.group.toLowerCase().includes(q));
+    if(!items.length) return '';
+    shown += items.length;
+    return `<div class="type-group-label">${esc(g.group)}</div>` + items.map(t => `
+      <div class="type-opt ${opts.value===t.id?'sel':''}" onclick="${opts.onSelect}('${t.id}')">
+        <div class="emo">${t.emo}</div>
+        <div class="lbl">${esc(t.label)}</div>
+        <div class="desc">${esc(t.desc)}</div>
+      </div>`).join('');
+  }).join('');
+  return `
+    <div class="type-search">
+      <span class="ic">🔎</span>
+      <input type="text" id="${opts.inputId}" placeholder="Search ${TYPE_COUNT}+ business types…" value="${esc(opts.searchValue)}" oninput="${opts.onSearch}(this.value)">
+    </div>
+    <div class="type-count-hint">${shown} of ${TYPE_COUNT} types${q ? ` matching “${esc(opts.searchValue)}”` : ''}</div>
+    <div class="type-grid-scroll"><div class="type-grid">
+      ${shown ? body : `<div class="type-empty">No business types match “${esc(opts.searchValue)}” — try a different word.</div>`}
+    </div></div>`;
+}
+function focusTypeSearch(id){
+  const el = document.getElementById(id); if(!el) return;
+  el.focus(); const len = el.value.length; el.setSelectionRange(len,len);
+}
+function onWizTypeSearch(v){ state.typeSearch = v; render(); focusTypeSearch('wiz-type-search'); }
+function onCpTypeSearch(v){ state.cp.typeSearch = v; render(); focusTypeSearch('cp-type-search'); }
 function logoNode(size, radiusClass){
   if(state.business.logo){ return `<img src="${state.business.logo}" alt="logo">`; }
   return esc(getInitials(state.business.name) || '?');
@@ -474,14 +751,7 @@ function renderWizard(){
       </div>
       <div class="field">
         <label>Business type</label>
-        <div class="type-grid">
-          ${['retail','cafe','salon','general'].map(t=>{ const m=typeMeta(t); return `
-            <div class="type-opt ${b.type===t?'sel':''}" onclick="selectBizType('${t}')">
-              <div class="emo">${m.emo}</div>
-              <div class="lbl">${m.label}</div>
-              <div class="desc">${m.desc}</div>
-            </div>`; }).join('')}
-        </div>
+        ${renderTypePicker({value:b.type, searchValue:state.typeSearch, onSelect:'selectBizType', onSearch:'onWizTypeSearch', inputId:'wiz-type-search'})}
       </div>`;
   } else if(step===2){
     stepHtml = `
@@ -973,12 +1243,7 @@ function renderCpBranding(){
     <div class="field"><label>Business name</label><input type="text" id="cp-name" value="${esc(b.name)}"></div>
     <div class="field">
       <label>Business type</label>
-      <div class="type-grid">
-        ${['retail','cafe','salon','general'].map(t=>{ const m=typeMeta(t); return `
-          <div class="type-opt ${b.type===t?'sel':''}" onclick="cpSelectType('${t}')">
-            <div class="emo">${m.emo}</div><div class="lbl">${m.label}</div><div class="desc">${m.desc}</div>
-          </div>`; }).join('')}
-      </div>
+      ${renderTypePicker({value:b.type, searchValue:state.cp.typeSearch, onSelect:'cpSelectType', onSearch:'onCpTypeSearch', inputId:'cp-type-search'})}
     </div>
     <div class="field-row">
       <div class="field"><label>Currency symbol</label><input type="text" id="cp-currency" maxlength="3" value="${esc(b.currency)}"></div>
