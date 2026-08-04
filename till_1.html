@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Till — POS Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --surface-alt:#EEF0F3; --border:#E2E4E9;
+  --text:#161A1F; --text-soft:#5B6270; --text-mute:#9AA1AC;
+  --primary:#0D9488; --primary-dark:#0B7C72; --primary-light:#E4F5F3;
+  --accent:#F59E0B; --accent-dark:#D9860A;
+  --danger:#DC2626; --danger-light:#FDEAEA; --success:#16A34A; --success-light:#E9F8EF;
+  --radius-s:8px; --radius-m:14px; --radius-l:22px;
+  --shadow-s:0 1px 2px rgba(20,25,35,.06);
+  --shadow-m:0 6px 16px rgba(20,25,35,.08);
+  --shadow-l:0 24px 48px rgba(20,25,35,.18);
+  --font-ui:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{margin:0;font-family:var(--font-ui);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+#app{min-height:100vh;}
+button,input,select,textarea{font-family:inherit;color:inherit;}
+::selection{background:var(--primary-light);}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important;animation:none!important;} }
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.02em;}
+p{margin:0;}
+a{color:inherit;}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:var(--radius-s);border:1px solid transparent;font-size:14px;font-weight:600;cursor:pointer;transition:transform .08s ease,background .15s ease,box-shadow .15s ease,border-color .15s ease;white-space:nowrap;background:none;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow-s);}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border);}
+.btn-secondary:hover{background:var(--surface-alt);}
+.btn-ghost{background:transparent;color:var(--text-soft);}
+.btn-ghost:hover{background:var(--surface-alt);}
+.btn-danger{background:var(--danger-light);color:var(--danger);}
+.btn-danger:hover{background:#fbdcdc;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-accent:hover{background:var(--accent-dark);}
+.btn-block{width:100%;}
+.btn-lg{padding:15px 22px;font-size:15px;border-radius:var(--radius-m);}
+.btn-sm{padding:7px 12px;font-size:12.5px;border-radius:7px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.icon-btn{width:38px;height:38px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:15px;transition:background .15s;}
+.icon-btn:hover{background:var(--surface-alt);}
+
+/* ---------- Forms ---------- */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.field label{font-size:12.5px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;}
+.field input[type=text],.field input[type=number],.field input[type=password],.field select,.field textarea{
+  padding:11px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-size:14.5px;color:var(--text);transition:border-color .15s;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);outline:none;}
+.field .hint{font-size:12px;color:var(--text-mute);font-weight:500;}
+.field-row{display:flex;gap:14px;}
+.field-row .field{flex:1;}
+input[type=color]{-webkit-appearance:none;appearance:none;width:54px;height:40px;border:1.5px solid var(--border);border-radius:10px;padding:2px;cursor:pointer;background:var(--surface);}
+input[type=color]::-webkit-color-swatch{border-radius:7px;border:none;}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
+
+/* ---------- Cards / layout ---------- */
+.card{background:var(--surface);border-radius:var(--radius-m);border:1px solid var(--border);}
+.center-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.badge-admin{background:var(--primary-light);color:var(--primary-dark);}
+.badge-cashier{background:var(--surface-alt);color:var(--text-soft);}
+
+/* ---------- Welcome ---------- */
+.welcome-card{max-width:460px;width:100%;text-align:center;padding:44px 36px;}
+.welcome-mark{width:64px;height:64px;border-radius:18px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:700;font-size:22px;margin:0 auto 20px;}
+.welcome-card h1{font-size:24px;margin-bottom:8px;}
+.welcome-card p{color:var(--text-soft);font-size:14.5px;line-height:1.55;margin-bottom:28px;}
+.welcome-actions{display:flex;flex-direction:column;gap:10px;}
+
+/* ---------- Wizard ---------- */
+.wizard-shell{max-width:560px;width:100%;padding:0;overflow:hidden;}
+.wizard-steps{display:flex;padding:22px 32px 0;gap:8px;}
+.wizard-step-dot{flex:1;height:4px;border-radius:3px;background:var(--surface-alt);}
+.wizard-step-dot.active{background:var(--primary);}
+.wizard-step-dot.done{background:var(--primary);opacity:.5;}
+.wizard-body{padding:28px 32px 32px;}
+.wizard-eyebrow{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
+.wizard-body h2{font-size:22px;margin-bottom:6px;}
+.wizard-body>.sub{color:var(--text-soft);font-size:14px;margin-bottom:24px;line-height:1.5;}
+.wizard-actions{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:10px;}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.type-opt{border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;text-align:left;background:var(--surface);transition:border-color .15s,background .15s;}
+.type-opt:hover{background:var(--surface-alt);}
+.type-opt.sel{border-color:var(--primary);background:var(--primary-light);}
+.type-opt .emo{font-size:20px;}
+.type-opt .lbl{font-weight:700;font-size:13.5px;margin-top:6px;}
+.type-opt .desc{font-size:11.5px;color:var(--text-soft);margin-top:2px;}
+.logo-upload{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.logo-preview{width:72px;height:72px;border-radius:16px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1.5px dashed var(--border);flex-shrink:0;}
+.logo-preview img{width:100%;height:100%;object-fit:cover;}
+.color-row{display:flex;gap:18px;margin-bottom:18px;}
+.color-item{display:flex;align-items:center;gap:10px;}
+.color-item .lbl{font-size:13px;font-weight:600;}
+.preview-strip{border:1.5px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:12px;background:var(--surface-alt);}
+.preview-strip .pv-logo{width:38px;height:38px;border-radius:9px;background:var(--pv-primary,#0D9488);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;overflow:hidden;}
+.preview-strip .pv-logo img{width:100%;height:100%;object-fit:cover;}
+.preview-strip .pv-name{font-weight:700;font-size:14.5px;}
+.preview-strip .pv-btn{margin-left:auto;padding:9px 16px;border-radius:9px;background:var(--pv-accent,#F59E0B);color:#fff;font-weight:700;font-size:12.5px;}
+
+/* ---------- PIN Login ---------- */
+.login-shell{max-width:380px;width:100%;text-align:center;}
+.login-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:26px;}
+.login-logo{width:60px;height:60px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin-bottom:12px;overflow:hidden;}
+.login-logo img{width:100%;height:100%;object-fit:cover;}
+.login-brand h1{font-size:19px;}
+.login-brand .sub{color:var(--text-mute);font-size:12.5px;margin-top:2px;}
+.pin-dots{display:flex;justify-content:center;gap:12px;margin:22px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:background .12s,border-color .12s;}
+.pin-dot.filled{background:var(--primary);border-color:var(--primary);}
+.pin-dot.err{border-color:var(--danger);}
+.pin-error{color:var(--danger);font-size:13px;font-weight:600;height:18px;margin-bottom:4px;}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:270px;margin:0 auto;}
+.pin-key{aspect-ratio:1;border-radius:16px;border:1.5px solid var(--border);background:var(--surface);font-size:19px;font-weight:700;font-family:var(--font-mono);cursor:pointer;transition:background .1s,transform .08s;}
+.pin-key:hover{background:var(--surface-alt);}
+.pin-key:active{transform:scale(.94);}
+.pin-key.wide{grid-column:span 1;font-size:13px;font-weight:600;color:var(--text-soft);}
+.pin-hint{margin-top:20px;font-size:12px;color:var(--text-mute);background:var(--surface-alt);padding:10px 14px;border-radius:10px;}
+
+/* ---------- Till layout ---------- */
+.till-wrap{display:flex;flex-direction:column;height:100vh;}
+.till-header{display:flex;align-items:center;gap:14px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.th-logo{width:36px;height:36px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden;}
+.th-logo img{width:100%;height:100%;object-fit:cover;}
+.th-name{font-weight:800;font-size:15px;}
+.th-meta{font-size:11.5px;color:var(--text-mute);font-family:var(--font-mono);}
+.th-spacer{flex:1;}
+.th-staff{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:var(--surface-alt);border-radius:100px;}
+.th-staff-av{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.th-staff-name{font-size:12.5px;font-weight:700;}
+.till-main{flex:1;display:flex;overflow:hidden;}
+.till-products{flex:1;display:flex;flex-direction:column;padding:18px 20px;overflow:hidden;}
+.cat-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;flex-shrink:0;}
+.cat-tab{padding:9px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
+.cat-tab:hover{background:var(--surface-alt);}
+.cat-tab.active{background:var(--text);border-color:var(--text);color:#fff;}
+.search-row{margin-bottom:14px;flex-shrink:0;}
+.search-row input{width:100%;padding:11px 14px;border-radius:11px;border:1.5px solid var(--border);font-size:14px;background:var(--surface);}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;overflow-y:auto;padding-bottom:20px;align-content:start;}
+.product-btn{border:none;border-radius:16px;padding:16px 14px;text-align:left;cursor:pointer;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:var(--shadow-s);transition:transform .08s ease,box-shadow .15s ease;position:relative;}
+.product-btn:active{transform:scale(.96);}
+.product-btn .emo{font-size:19px;}
+.product-btn .nm{font-weight:700;font-size:13.5px;line-height:1.25;margin-top:6px;}
+.product-btn .dt{font-size:10.5px;opacity:.85;margin-top:1px;}
+.product-btn .pr{font-family:var(--font-mono);font-weight:700;font-size:14px;margin-top:8px;}
+.empty-state{margin:auto;text-align:center;color:var(--text-mute);padding:40px;}
+.empty-state .em{font-size:30px;margin-bottom:10px;}
+
+/* ---------- Cart ---------- */
+.cart-panel{width:360px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+.cart-head{padding:18px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cart-head h3{font-size:15px;}
+.cart-items{flex:1;overflow-y:auto;padding:10px 16px;}
+.cart-empty{text-align:center;color:var(--text-mute);font-size:13px;padding:50px 20px;}
+.cart-line{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--surface-alt);}
+.cart-line .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cart-line .info{flex:1;min-width:0;}
+.cart-line .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cart-line .pr{font-size:11.5px;color:var(--text-mute);font-family:var(--font-mono);}
+.qty-ctrl{display:flex;align-items:center;gap:6px;}
+.qty-btn{width:22px;height:22px;border-radius:6px;border:1px solid var(--border);background:var(--surface-alt);cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.qty-val{font-family:var(--font-mono);font-weight:700;font-size:12.5px;min-width:16px;text-align:center;}
+.line-total{font-family:var(--font-mono);font-weight:700;font-size:13px;min-width:52px;text-align:right;}
+.rm-btn{color:var(--text-mute);background:none;border:none;cursor:pointer;font-size:14px;padding:2px;}
+.cart-foot{padding:16px 20px 20px;border-top:1px solid var(--border);}
+.tot-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-soft);margin-bottom:6px;}
+.tot-row.grand{font-size:19px;font-weight:800;color:var(--text);font-family:var(--font-mono);margin:10px 0 16px;}
+.cart-foot-actions{display:flex;gap:8px;}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,18,24,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(2px);}
+.modal{background:var(--surface);border-radius:var(--radius-l);max-width:440px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-l);}
+.modal-lg{max-width:640px;}
+.modal-head{padding:22px 26px 4px;display:flex;align-items:start;justify-content:space-between;}
+.modal-head h2{font-size:18px;}
+.modal-head .close{cursor:pointer;color:var(--text-mute);background:none;border:none;font-size:18px;padding:4px;}
+.modal-body{padding:18px 26px 26px;}
+
+/* ---------- Checkout ---------- */
+.pay-tabs{display:flex;gap:8px;margin-bottom:20px;background:var(--surface-alt);padding:5px;border-radius:12px;}
+.pay-tab{flex:1;padding:10px;border-radius:9px;border:none;background:none;font-weight:700;font-size:13px;cursor:pointer;color:var(--text-soft);}
+.pay-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-s);}
+.due-box{text-align:center;padding:18px;background:var(--primary-light);border-radius:14px;margin-bottom:18px;}
+.due-box .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:700;color:var(--primary-dark);}
+.due-box .amt{font-family:var(--font-mono);font-weight:800;font-size:32px;color:var(--primary-dark);margin-top:2px;}
+.quick-cash{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.quick-cash button{padding:12px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface);font-weight:700;font-size:13px;cursor:pointer;font-family:var(--font-mono);}
+.quick-cash button:hover{background:var(--surface-alt);}
+.change-box{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:12px;background:var(--success-light);margin:14px 0;}
+.change-box.neg{background:var(--danger-light);}
+.change-box .lbl{font-size:12.5px;font-weight:700;color:var(--text-soft);}
+.change-box .amt{font-family:var(--font-mono);font-weight:800;font-size:19px;color:var(--success);}
+.change-box.neg .amt{color:var(--danger);}
+.split-row{display:flex;gap:12px;margin-bottom:8px;}
+.card-sim{text-align:center;padding:30px 10px;}
+.card-sim .cico{font-size:34px;margin-bottom:12px;}
+.spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:10px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ---------- Receipt ---------- */
+.receipt{background:var(--surface);width:100%;max-width:320px;margin:0 auto;padding:26px 22px 20px;font-family:var(--font-mono);position:relative;}
+.receipt-head{text-align:center;margin-bottom:16px;}
+.receipt-logo{width:44px;height:44px;border-radius:10px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 8px;overflow:hidden;}
+.receipt-logo img{width:100%;height:100%;object-fit:cover;}
+.receipt-head .bn{font-weight:700;font-size:14px;font-family:var(--font-ui);}
+.receipt-head .meta{font-size:10.5px;color:var(--text-mute);margin-top:4px;}
+.receipt-div{border-top:1px dashed var(--border);margin:12px 0;}
+.receipt-line{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;}
+.receipt-line .nm{color:var(--text);}
+.receipt-line .qy{color:var(--text-mute);}
+.receipt-tot{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--text-soft);}
+.receipt-tot.grand{font-size:16px;font-weight:700;color:var(--text);margin-top:6px;}
+.receipt-foot{text-align:center;font-size:10.5px;color:var(--text-mute);margin-top:16px;line-height:1.6;}
+.perf{height:14px;position:relative;overflow:hidden;}
+.perf::before{content:'';position:absolute;top:-7px;left:0;right:0;height:14px;background-image:radial-gradient(circle 7px, var(--bg) 7px, transparent 7.5px);background-size:20px 14px;background-repeat:repeat-x;}
+
+/* ---------- Control panel ---------- */
+.cp-wrap{display:flex;height:100vh;}
+.cp-sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:18px 12px;}
+.cp-brand{display:flex;align-items:center;gap:10px;padding:6px 10px 20px;}
+.cp-brand .lg{width:32px;height:32px;border-radius:8px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;overflow:hidden;}
+.cp-brand .lg img{width:100%;height:100%;object-fit:cover;}
+.cp-brand .nm{font-weight:800;font-size:13.5px;}
+.cp-nav{display:flex;flex-direction:column;gap:3px;}
+.cp-nav button{display:flex;align-items:center;gap:10px;text-align:left;padding:11px 12px;border-radius:10px;border:none;background:none;font-weight:600;font-size:13.5px;color:var(--text-soft);cursor:pointer;}
+.cp-nav button:hover{background:var(--surface-alt);}
+.cp-nav button.active{background:var(--primary-light);color:var(--primary-dark);}
+.cp-sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.cp-main{flex:1;overflow-y:auto;padding:30px 40px 60px;}
+.cp-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
+.cp-topbar h1{font-size:22px;}
+.cp-topbar .sub{color:var(--text-soft);font-size:13.5px;margin-top:3px;}
+.section-card{padding:24px;margin-bottom:20px;}
+.section-card h3{font-size:15px;margin-bottom:4px;}
+.section-card .sc-sub{color:var(--text-soft);font-size:12.5px;margin-bottom:18px;}
+.cat-block{margin-bottom:22px;}
+.cat-block-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cat-block-head .swd{width:10px;height:10px;border-radius:3px;}
+.cat-block-head h4{font-size:13.5px;flex:1;}
+.prod-list{display:flex;flex-direction:column;gap:8px;}
+.prod-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}
+.prod-row .swatch{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0;}
+.prod-row .pinfo{flex:1;min-width:0;}
+.prod-row .pn{font-weight:700;font-size:13.5px;}
+.prod-row .pd{font-size:11.5px;color:var(--text-mute);}
+.prod-row .pp{font-family:var(--font-mono);font-weight:700;font-size:13.5px;color:var(--text-soft);width:64px;text-align:right;}
+.prod-actions{display:flex;gap:6px;}
+.edit-form{padding:14px;border:1.5px dashed var(--border);border-radius:12px;background:var(--surface-alt);margin-bottom:10px;}
+.swatch-picker{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:6px;}
+.swatch-opt{width:26px;height:26px;border-radius:7px;cursor:pointer;border:2px solid transparent;}
+.swatch-opt.sel{border-color:var(--text);}
+.emoji-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.emoji-row button{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:14px;}
+table.data-table{width:100%;border-collapse:collapse;}
+table.data-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-mute);padding:0 12px 10px;font-weight:700;}
+table.data-table td{padding:12px;border-top:1px solid var(--surface-alt);font-size:13.5px;}
+table.data-table tr:hover td{background:var(--surface-alt);}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px;}
+.stat-card{padding:18px 20px;}
+.stat-card .lbl{font-size:11.5px;color:var(--text-mute);text-transform:uppercase;letter-spacing:.04em;font-weight:700;}
+.stat-card .val{font-family:var(--font-mono);font-weight:800;font-size:24px;margin-top:6px;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.bar-row .bn{width:100px;font-size:12.5px;font-weight:600;flex-shrink:0;}
+.bar-track{flex:1;height:9px;background:var(--surface-alt);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--primary);border-radius:5px;}
+.bar-row .bv{width:64px;text-align:right;font-family:var(--font-mono);font-size:12px;color:var(--text-soft);flex-shrink:0;}
+.txn-row{cursor:pointer;}
+.txn-detail{background:var(--surface-alt);padding:14px 16px;border-radius:10px;margin:-4px 0 10px;font-size:12.5px;}
+
+/* ---------- misc ---------- */
+.divider{height:1px;background:var(--border);margin:22px 0;}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.upload-row{display:flex;align-items:center;gap:12px;}
+.file-btn{position:relative;overflow:hidden;}
+.file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+@media (max-width:860px){
+  .till-main{flex-direction:column;}
+  .cart-panel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:46vh;}
+  .cp-wrap{flex-direction:column;height:auto;min-height:100vh;}
+  .cp-sidebar{width:100%;flex-direction:row;overflow-x:auto;align-items:center;}
+  .cp-nav{flex-direction:row;}
+  .cp-sidebar-foot{margin-top:0;padding-top:0;border-top:none;margin-left:auto;}
+  .cp-main{padding:22px 16px 50px;}
+}
+@media print{
+  body *{visibility:hidden;}
+  #receipt-print, #receipt-print *{visibility:visible;}
+  #receipt-print{position:absolute;top:0;left:0;width:100%;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================ STATE ============================ */
+const PALETTE = ['#0D9488','#4F46E5','#DB2777','#DC2626','#D97706','#65A30D','#0891B2','#7C3AED','#111827','#6B7280'];
+const EMOJI_SET = ['☕','🍵','🥤','🍔','🥪','🍕','🍰','🥐','🍪','🍜','👕','👜','🧴','💇','✂️','💅','🔧','🛠️','🧾','🎟️','📦','🛒'];
+
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+function seedState(){
+  return {
+    screen: 'welcome', // welcome | wizard | login | till | controlpanel
+    wizardStep: 1,
+    business: {
+      name: '', type: 'general', logo: null,
+      primaryColor: '#0D9488', accentColor: '#F59E0B',
+      currency: '£', taxRate: 20, taxInclusive: true,
+      setupComplete: false, demo: false
+    },
+    categories: [], products: [], staff: [],
+    currentStaff: null,
+    cart: [], activeCategory: null, search: '',
+    sales: [],
+    pinBuffer: '', pinError: '',
+    checkout: { open:false, tab:'cash', tendered:0, splitCash:0, processing:false, done:false },
+    receipt: null,
+    cp: { tab:'branding', editingProductId:null, editingCategoryId:null, editingStaffId:null, addingProduct:null, expandedTxn:null }
+  };
+}
+let state = seedState();
+
+function seedDemoData(s){
+  s.business.name = 'The Corner Shop';
+  s.business.type = 'general';
+  s.business.setupComplete = true;
+  s.business.demo = true;
+  const cats = [
+    {id:'cat-drinks', name:'Drinks', color:'#0891B2'},
+    {id:'cat-food', name:'Food', color:'#D97706'},
+    {id:'cat-retail', name:'Retail', color:'#4F46E5'},
+    {id:'cat-services', name:'Services', color:'#DB2777'}
+  ];
+  s.categories = cats;
+  s.products = [
+    {id:uid(),categoryId:'cat-drinks',name:'Espresso',price:2.50,color:'#0891B2',emoji:'☕',details:'Single shot'},
+    {id:uid(),categoryId:'cat-drinks',name:'Latte',price:3.20,color:'#0891B2',emoji:'☕',details:'Whole milk'},
+    {id:uid(),categoryId:'cat-drinks',name:'Iced Tea',price:2.80,color:'#0891B2',emoji:'🥤',details:''},
+    {id:uid(),categoryId:'cat-food',name:'Bacon Roll',price:4.50,color:'#D97706',emoji:'🥪',details:''},
+    {id:uid(),categoryId:'cat-food',name:'Soup of the Day',price:5.00,color:'#D97706',emoji:'🍜',details:'Ask for todays flavour'},
+    {id:uid(),categoryId:'cat-food',name:'Sandwich',price:4.20,color:'#D97706',emoji:'🥪',details:''},
+    {id:uid(),categoryId:'cat-retail',name:'T-Shirt',price:15.00,color:'#4F46E5',emoji:'👕',details:'One size'},
+    {id:uid(),categoryId:'cat-retail',name:'Mug',price:8.50,color:'#4F46E5',emoji:'📦',details:''},
+    {id:uid(),categoryId:'cat-retail',name:'Tote Bag',price:6.00,color:'#4F46E5',emoji:'👜',details:''},
+    {id:uid(),categoryId:'cat-services',name:'Haircut',price:25.00,color:'#DB2777',emoji:'💇',details:'30 min'},
+    {id:uid(),categoryId:'cat-services',name:'Consultation',price:40.00,color:'#DB2777',emoji:'🧾',details:'45 min'},
+    {id:uid(),categoryId:'cat-services',name:'Basic Repair',price:20.00,color:'#DB2777',emoji:'🔧',details:''}
+  ];
+  s.staff = [
+    {id:uid(),name:'Alex Morgan',pin:'1234',role:'admin'},
+    {id:uid(),name:'Sam Taylor',pin:'1111',role:'cashier'}
+  ];
+  s.activeCategory = cats[0].id;
+}
+
+/* ============================ HELPERS ============================ */
+function esc(str){ return String(str??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtMoney(n){ return state.business.currency + (Math.round((n+Number.EPSILON)*100)/100).toFixed(2); }
+function getInitials(name){ if(!name) return '?'; const p = name.trim().split(/\\s+/); return (p[0]?.[0]||'').toUpperCase() + (p[1]?.[0]||'').toUpperCase(); }
+function shade(hex, pct){
+  hex = hex.replace('#','');
+  let r = parseInt(hex.substring(0,2),16), g = parseInt(hex.substring(2,4),16), b = parseInt(hex.substring(4,6),16);
+  r = Math.min(255,Math.max(0, Math.round(r + (pct<0? r*pct/100 : (255-r)*pct/100))));
+  g = Math.min(255,Math.max(0, Math.round(g + (pct<0? g*pct/100 : (255-g)*pct/100))));
+  b = Math.min(255,Math.max(0, Math.round(b + (pct<0? b*pct/100 : (255-b)*pct/100))));
+  return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+function hexToRgba(hex, a){ hex = hex.replace('#',''); const r=parseInt(hex.substring(0,2),16),g=parseInt(hex.substring(2,4),16),b=parseInt(hex.substring(4,6),16); return `rgba(${r},${g},${b},${a})`; }
+function applyTheme(){
+  const root = document.documentElement.style;
+  root.setProperty('--primary', state.business.primaryColor);
+  root.setProperty('--primary-dark', shade(state.business.primaryColor, -18));
+  root.setProperty('--primary-light', hexToRgba(state.business.primaryColor, .12));
+  root.setProperty('--accent', state.business.accentColor);
+  root.setProperty('--accent-dark', shade(state.business.accentColor, -18));
+}
+function typeLabel(){
+  return {retail:'Products', cafe:'Menu Items', salon:'Services', general:'Items'}[state.business.type] || 'Items';
+}
+function typeMeta(t){
+  return {
+    retail:{emo:'🛍️', label:'Retail shop', desc:'Products & barcodes'},
+    cafe:{emo:'☕', label:'Café / Restaurant', desc:'Food & drink orders'},
+    salon:{emo:'💇', label:'Salon / Services', desc:'Appointments & treatments'},
+    general:{emo:'🧾', label:'General purpose', desc:'A bit of everything'}
+  }[t];
+}
+function logoNode(size, radiusClass){
+  if(state.business.logo){ return `<img src="${state.business.logo}" alt="logo">`; }
+  return esc(getInitials(state.business.name) || '?');
+}
+function cartTotals(){
+  const subtotalGross = state.cart.reduce((sum,i)=> sum + i.price*i.qty, 0);
+  let exVat, vat, total;
+  if(state.business.taxInclusive){
+    total = subtotalGross;
+    vat = total - total/(1+state.business.taxRate/100);
+    exVat = total - vat;
+  } else {
+    exVat = subtotalGross;
+    vat = exVat * state.business.taxRate/100;
+    total = exVat + vat;
+  }
+  return { exVat, vat, total };
+}
+function render(){
+  const root = document.getElementById('app');
+  let html = '';
+  switch(state.screen){
+    case 'welcome': html = renderWelcome(); break;
+    case 'wizard': html = renderWizard(); break;
+    case 'login': html = renderLogin(); break;
+    case 'till': html = renderTill(); break;
+    case 'controlpanel': html = renderControlPanel(); break;
+  }
+  root.innerHTML = html + (state.checkout.open ? renderCheckoutModal() : '') + (state.receipt ? renderReceiptModal() : '');
+  if(state.screen === 'login'){ updatePinDots(); }
+}
+
+/* ============================ WELCOME ============================ */
+function renderWelcome(){
+  return `
+  <div class="center-screen">
+    <div class="card welcome-card">
+      <div class="welcome-mark">£</div>
+      <h1>Set up your till</h1>
+      <p>Build your business profile, add your branding, and get a fully customisable point-of-sale ready to use in a couple of minutes.</p>
+      <div class="welcome-actions">
+        <button class="btn btn-primary btn-lg btn-block" onclick="startWizard()">Set up my business</button>
+        <button class="btn btn-secondary btn-lg btn-block" onclick="useDemoData()">Explore with demo data</button>
+      </div>
+    </div>
+  </div>`;
+}
+function startWizard(){ state.screen='wizard'; state.wizardStep=1; render(); }
+function useDemoData(){ state = seedState(); seedDemoData(state); applyTheme(); state.screen='login'; render(); }
+
+/* ============================ WIZARD ============================ */
+function renderWizard(){
+  const step = state.wizardStep;
+  const b = state.business;
+  let stepHtml = '';
+  if(step===1){
+    stepHtml = `
+      <div class="wizard-eyebrow">Step 1 of 4</div>
+      <h2>Tell us about your business</h2>
+      <div class="sub">This shapes the language and layout of your till.</div>
+      <div class="field">
+        <label>Business name</label>
+        <input type="text" id="wiz-name" placeholder="e.g. The Corner Shop" value="${esc(b.name)}">
+      </div>
+      <div class="field">
+        <label>Business type</label>
+        <div class="type-grid">
+          ${['retail','cafe','salon','general'].map(t=>{ const m=typeMeta(t); return `
+            <div class="type-opt ${b.type===t?'sel':''}" onclick="selectBizType('${t}')">
+              <div class="emo">${m.emo}</div>
+              <div class="lbl">${m.label}</div>
+              <div class="desc">${m.desc}</div>
+            </div>`; }).join('')}
+        </div>
+      </div>`;
+  } else if(step===2){
+    stepHtml = `
+      <div class="wizard-eyebrow">Step 2 of 4</div>
+      <h2>Add your branding</h2>
+      <div class="sub">Upload a logo and pick colours that match your brand — you can change these any time from the control panel.</div>
+      <div class="field">
+        <label>Logo</label>
+        <div class="logo-upload">
+          <div class="logo-preview" id="wiz-logo-preview">${b.logo ? `<img src="${b.logo}">` : '<span style="color:var(--text-mute);font-size:11px;">No logo</span>'}</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <button class="btn btn-secondary btn-sm file-btn">Upload image<input type="file" accept="image/*" onchange="handleLogoUpload(this,'wiz-logo-preview')"></button>
+            ${b.logo ? `<button class="btn btn-ghost btn-sm" onclick="removeLogo()">Remove logo</button>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Brand colours</label>
+        <div class="color-row">
+          <div class="color-item"><input type="color" id="wiz-primary" value="${b.primaryColor}" oninput="livePreviewColors()"><span class="lbl">Primary</span></div>
+          <div class="color-item"><input type="color" id="wiz-accent" value="${b.accentColor}" oninput="livePreviewColors()"><span class="lbl">Accent</span></div>
+        </div>
+      </div>
+      <div class="preview-strip" id="wiz-preview-strip" style="--pv-primary:${b.primaryColor};--pv-accent:${b.accentColor}">
+        <div class="pv-logo">${b.logo?`<img src="${b.logo}">`:esc(getInitials(b.name)||'?')}</div>
+        <div class="pv-name">${esc(b.name||'Your business')}</div>
+        <div class="pv-btn">Checkout</div>
+      </div>`;
+  } else if(step===3){
+    stepHtml = `
+      <div class="wizard-eyebrow">Step 3 of 4</div>
+      <h2>Create your admin account</h2>
+      <div class="sub">This account can access the control panel to manage products, staff and reports.</div>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="wiz-staff-name" placeholder="e.g. Alex Morgan" value="">
+      </div>
+      <div class="field">
+        <label>4-digit PIN</label>
+        <input type="text" inputmode="numeric" maxlength="4" id="wiz-staff-pin" placeholder="1234" value="">
+        <div class="hint">You'll use this to log in at the till.</div>
+      </div>
+      <div class="field">
+        <label>Currency &amp; tax</label>
+        <div class="field-row">
+          <div class="field" style="margin-bottom:0;"><input type="text" id="wiz-currency" maxlength="3" value="${esc(b.currency)}" placeholder="£"></div>
+          <div class="field" style="margin-bottom:0;"><input type="number" id="wiz-taxrate" value="${b.taxRate}" min="0" max="100" step="0.5" placeholder="VAT %"></div>
+        </div>
+        <div class="hint">Currency symbol and VAT / sales tax rate applied at checkout.</div>
+      </div>`;
+  } else if(step===4){
+    stepHtml = `
+      <div class="wizard-eyebrow">Step 4 of 4</div>
+      <h2>All set, ${esc(b.name||'there')}</h2>
+      <div class="sub">Here's a quick summary. You can fine-tune everything later from the control panel.</div>
+      <div class="preview-strip" style="margin-bottom:18px;--pv-primary:${b.primaryColor};--pv-accent:${b.accentColor}">
+        <div class="pv-logo">${b.logo?`<img src="${b.logo}">`:esc(getInitials(b.name)||'?')}</div>
+        <div class="pv-name">${esc(b.name)}</div>
+        <div class="pv-btn">Checkout</div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Business type</label><p style="font-size:14px;font-weight:600;">${typeMeta(b.type).label}</p></div>
+        <div class="field"><label>Currency</label><p style="font-size:14px;font-weight:600;">${esc(b.currency)} · ${b.taxRate}% tax</p></div>
+      </div>
+      <div class="hint" style="margin-bottom:6px;">We've added a starter set of categories and items for a ${typeMeta(b.type).label.toLowerCase()} — you can edit or remove them from the control panel any time.</div>`;
+  }
+  const dots = [1,2,3,4].map(n => `<div class="wizard-step-dot ${n===step?'active':n<step?'done':''}"></div>`).join('');
+  return `
+  <div class="center-screen">
+    <div class="card wizard-shell">
+      <div class="wizard-steps">${dots}</div>
+      <div class="wizard-body">
+        ${stepHtml}
+        <div class="wizard-actions">
+          ${step>1 ? `<button class="btn btn-ghost" onclick="wizardBack()">Back</button>` : `<button class="btn btn-ghost" onclick="state.screen='welcome';render()">Cancel</button>`}
+          <button class="btn btn-primary" onclick="${step<4?'wizardNext()':'finishWizard()'}">${step<4?'Continue':'Enter till'}</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function selectBizType(t){ state.business.type = t; render(); }
+function livePreviewColors(){
+  const p = document.getElementById('wiz-primary').value;
+  const a = document.getElementById('wiz-accent').value;
+  const strip = document.getElementById('wiz-preview-strip');
+  if(strip){ strip.style.setProperty('--pv-primary', p); strip.style.setProperty('--pv-accent', a); strip.querySelector('.pv-logo').style.background = p; strip.querySelector('.pv-btn').style.background = a; }
+}
+function handleLogoUpload(input, previewId){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.business.logo = e.target.result;
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo(){ state.business.logo = null; render(); }
+function wizardBack(){ state.wizardStep = Math.max(1, state.wizardStep-1); render(); }
+function wizardNext(){
+  const b = state.business;
+  if(state.wizardStep===1){
+    const name = document.getElementById('wiz-name').value.trim();
+    if(!name){ alert('Please enter a business name.'); return; }
+    b.name = name;
+  } else if(state.wizardStep===2){
+    b.primaryColor = document.getElementById('wiz-primary').value;
+    b.accentColor = document.getElementById('wiz-accent').value;
+    applyTheme();
+  } else if(state.wizardStep===3){
+    const nm = document.getElementById('wiz-staff-name').value.trim();
+    const pin = document.getElementById('wiz-staff-pin').value.trim();
+    if(!nm){ alert('Please enter your name.'); return; }
+    if(!/^\d{4}$/.test(pin)){ alert('PIN must be exactly 4 digits.'); return; }
+    b.currency = document.getElementById('wiz-currency').value.trim() || '£';
+    b.taxRate = parseFloat(document.getElementById('wiz-taxrate').value) || 0;
+    state._pendingStaff = {name:nm, pin};
+    seedStarterCatalog();
+  }
+  state.wizardStep++;
+  render();
+}
+function seedStarterCatalog(){
+  const t = state.business.type;
+  const presets = {
+    retail: [ {cat:'Clothing',color:'#4F46E5',items:[['T-Shirt',15,'👕'],['Hoodie',32,'🧥'],['Cap',12,'🧢']]},
+      {cat:'Accessories',color:'#0891B2',items:[['Tote Bag',6,'👜'],['Mug',8.5,'📦']]} ],
+    cafe: [ {cat:'Drinks',color:'#0891B2',items:[['Espresso',2.5,'☕'],['Latte',3.2,'☕'],['Iced Tea',2.8,'🥤']]},
+      {cat:'Food',color:'#D97706',items:[['Bacon Roll',4.5,'🥪'],['Sandwich',4.2,'🥪'],['Soup',5,'🍜']]} ],
+    salon: [ {cat:'Hair',color:'#DB2777',items:[['Haircut',25,'💇'],['Colour',55,'💅'],['Blow Dry',18,'✂️']]},
+      {cat:'Other',color:'#65A30D',items:[['Consultation',0,'🧾']]} ],
+    general: [ {cat:'Popular',color:'#0D9488',items:[['Item 1',5,'📦'],['Item 2',10,'📦'],['Item 3',15,'📦']]} ]
+  };
+  const plan = presets[t] || presets.general;
+  state.categories = []; state.products = [];
+  plan.forEach(group=>{
+    const cid = uid();
+    state.categories.push({id:cid, name:group.cat, color:group.color});
+    group.items.forEach(([name,price,emoji])=>{
+      state.products.push({id:uid(), categoryId:cid, name, price, color:group.color, emoji, details:''});
+    });
+  });
+  state.activeCategory = state.categories[0]?.id || null;
+}
+function finishWizard(){
+  const b = state.business;
+  b.setupComplete = true;
+  const st = state._pendingStaff;
+  const staffObj = {id:uid(), name:st.name, pin:st.pin, role:'admin'};
+  state.staff = [staffObj];
+  delete state._pendingStaff;
+  applyTheme();
+  state.currentStaff = staffObj;
+  state.screen = 'till';
+  render();
+}
+
+/* ============================ PIN LOGIN ============================ */
+function renderLogin(){
+  const b = state.business;
+  return `
+  <div class="center-screen">
+    <div class="login-shell">
+      <div class="login-brand">
+        <div class="login-logo">${logoNode()}</div>
+        <h1>${esc(b.name)}</h1>
+        <div class="sub">Enter your PIN to start your shift</div>
+      </div>
+      <div class="pin-error">${state.pinError || ''}</div>
+      <div class="pin-dots" id="pin-dots"></div>
+      <div class="pin-pad">
+        ${[1,2,3,4,5,6,7,8,9].map(n=>`<button class="pin-key" onclick="pinPress('${n}')">${n}</button>`).join('')}
+        <button class="pin-key wide" onclick="pinClear()">Clear</button>
+        <button class="pin-key" onclick="pinPress('0')">0</button>
+        <button class="pin-key wide" onclick="pinBackspace()">⌫</button>
+      </div>
+      ${b.demo ? `<div class="pin-hint">Demo PINs — Admin: <strong>1234</strong> &nbsp;·&nbsp; Cashier: <strong>1111</strong></div>` : ''}
+    </div>
+  </div>`;
+}
+function updatePinDots(){
+  const el = document.getElementById('pin-dots'); if(!el) return;
+  el.innerHTML = [0,1,2,3].map(i => `<div class="pin-dot ${i<state.pinBuffer.length?'filled':''} ${state.pinError?'err':''}"></div>`).join('');
+}
+function pinPress(d){
+  if(state.pinBuffer.length>=4) return;
+  state.pinBuffer += d; state.pinError='';
+  updatePinDots();
+  if(state.pinBuffer.length===4){ setTimeout(tryPinLogin, 120); }
+}
+function pinClear(){ state.pinBuffer=''; state.pinError=''; updatePinDots(); }
+function pinBackspace(){ state.pinBuffer = state.pinBuffer.slice(0,-1); updatePinDots(); }
+function tryPinLogin(){
+  const staff = state.staff.find(s=>s.pin===state.pinBuffer);
+  if(staff){
+    state.currentStaff = staff; state.pinBuffer=''; state.pinError=''; state.cart=[];
+    state.screen='till'; render();
+  } else {
+    state.pinError = 'Incorrect PIN, try again';
+    updatePinDots();
+    setTimeout(()=>{ state.pinBuffer=''; render(); }, 700);
+  }
+}
+function logout(){ state.currentStaff=null; state.cart=[]; state.pinBuffer=''; state.pinError=''; state.screen='login'; render(); }
+
+/* ============================ TILL ============================ */
+function renderTill(){
+  const b = state.business;
+  const cats = state.categories;
+  if(!state.activeCategory && cats.length) state.activeCategory = cats[0].id;
+  let products = state.products.filter(p => p.categoryId === state.activeCategory);
+  if(state.search.trim()){
+    const q = state.search.trim().toLowerCase();
+    products = state.products.filter(p => p.name.toLowerCase().includes(q));
+  }
+  const totals = cartTotals();
+  const isAdmin = state.currentStaff && state.currentStaff.role==='admin';
+  return `
+  <div class="till-wrap">
+    <div class="till-header">
+      <div class="th-logo">${logoNode()}</div>
+      <div>
+        <div class="th-name">${esc(b.name)}</div>
+        <div class="th-meta" id="th-clock">${new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <div class="th-spacer"></div>
+      ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="openControlPanel()">⚙ Control panel</button>` : ''}
+      <div class="th-staff">
+        <div class="th-staff-av">${getInitials(state.currentStaff?.name)}</div>
+        <div class="th-staff-name">${esc(state.currentStaff?.name||'')}</div>
+      </div>
+      <button class="icon-btn" title="Switch user / log out" onclick="logout()">⏻</button>
+    </div>
+    <div class="till-main">
+      <div class="till-products">
+        <div class="search-row">
+          <input type="text" placeholder="Search ${typeLabel().toLowerCase()}…" value="${esc(state.search)}" oninput="onTillSearch(this.value)">
+        </div>
+        <div class="cat-tabs">
+          ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !state.search ?'active':''}" onclick="selectCategory('${c.id}')">${esc(c.name)}</button>`).join('')}
+        </div>
+        <div class="product-grid">
+          ${products.length ? products.map(p=>`
+            <button class="product-btn" style="background:${p.color||b.primaryColor}" onclick="addToCart('${p.id}')">
+              <div class="emo">${p.emoji||'📦'}</div>
+              <div>
+                <div class="nm">${esc(p.name)}</div>
+                ${p.details?`<div class="dt">${esc(p.details)}</div>`:''}
+              </div>
+              <div class="pr">${fmtMoney(p.price)}</div>
+            </button>`).join('') : `<div class="empty-state"><div class="em">🗂️</div>No ${typeLabel().toLowerCase()} found</div>`}
+        </div>
+      </div>
+      <div class="cart-panel">
+        <div class="cart-head"><h3>Current sale</h3>${state.cart.length?`<button class="btn btn-ghost btn-sm" onclick="clearCart()">Clear</button>`:''}</div>
+        <div class="cart-items">
+          ${state.cart.length ? state.cart.map(i=>`
+            <div class="cart-line">
+              <div class="sw" style="background:${i.color}"></div>
+              <div class="info">
+                <div class="nm">${esc(i.name)}</div>
+                <div class="pr">${fmtMoney(i.price)} each</div>
+              </div>
+              <div class="qty-ctrl">
+                <button class="qty-btn" onclick="changeQty('${i.productId}',-1)">−</button>
+                <div class="qty-val">${i.qty}</div>
+                <button class="qty-btn" onclick="changeQty('${i.productId}',1)">+</button>
+              </div>
+              <div class="line-total">${fmtMoney(i.price*i.qty)}</div>
+              <button class="rm-btn" onclick="removeFromCart('${i.productId}')">✕</button>
+            </div>`).join('') : `<div class="cart-empty">Tap an item to add it to the sale</div>`}
+        </div>
+        <div class="cart-foot">
+          <div class="tot-row"><span>Subtotal</span><span>${fmtMoney(totals.exVat)}</span></div>
+          <div class="tot-row"><span>VAT (${b.taxRate}%)</span><span>${fmtMoney(totals.vat)}</span></div>
+          <div class="tot-row grand"><span>Total</span><span>${fmtMoney(totals.total)}</span></div>
+          <div class="cart-foot-actions">
+            <button class="btn btn-primary btn-lg btn-block" ${state.cart.length?'':'disabled'} onclick="openCheckout()">Charge ${fmtMoney(totals.total)}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function onTillSearch(v){ state.search = v; render(); document.querySelector('.search-row input')?.focus(); }
+function selectCategory(id){ state.activeCategory = id; state.search=''; render(); }
+function addToCart(productId){
+  const p = state.products.find(x=>x.id===productId); if(!p) return;
+  const existing = state.cart.find(i=>i.productId===productId);
+  if(existing) existing.qty++;
+  else state.cart.push({productId:p.id, name:p.name, price:p.price, color:p.color||state.business.primaryColor, qty:1});
+  render();
+}
+function changeQty(productId, delta){
+  const item = state.cart.find(i=>i.productId===productId); if(!item) return;
+  item.qty += delta;
+  if(item.qty<=0) state.cart = state.cart.filter(i=>i.productId!==productId);
+  render();
+}
+function removeFromCart(productId){ state.cart = state.cart.filter(i=>i.productId!==productId); render(); }
+function clearCart(){ state.cart=[]; render(); }
+
+/* ============================ CHECKOUT ============================ */
+function openCheckout(){
+  const totals = cartTotals();
+  state.checkout = { open:true, tab:'cash', tendered: Math.ceil(totals.total), splitCash:0, processing:false, done:false };
+  render();
+}
+function closeCheckout(){ state.checkout.open=false; render(); }
+function setPayTab(tab){ state.checkout.tab=tab; state.checkout.processing=false; render(); }
+function setTendered(v){ state.checkout.tendered = Math.max(0, v); render(); }
+function onTenderedInput(el){
+  state.checkout.tendered = parseFloat(el.value)||0;
+  patchChangeDisplay();
+}
+function patchChangeDisplay(){
+  const totals = cartTotals();
+  const diff = state.checkout.tendered - totals.total;
+  const box = document.getElementById('change-box');
+  if(!box) return;
+  box.classList.toggle('neg', diff<0);
+  box.querySelector('.lbl').textContent = diff<0 ? 'Still due' : 'Change due';
+  box.querySelector('.amt').textContent = fmtMoney(Math.abs(diff));
+  document.getElementById('confirm-cash-btn').disabled = diff < 0;
+}
+function onSplitCashInput(el){
+  state.checkout.splitCash = parseFloat(el.value)||0;
+  const totals = cartTotals();
+  const card = Math.max(0, totals.total - state.checkout.splitCash);
+  document.getElementById('split-card-amt').textContent = fmtMoney(card);
+  document.getElementById('confirm-split-btn').disabled = state.checkout.splitCash < 0 || state.checkout.splitCash > totals.total;
+}
+function renderCheckoutModal(){
+  const totals = cartTotals();
+  const co = state.checkout;
+  let body = '';
+  if(co.tab==='cash'){
+    const diff = co.tendered - totals.total;
+    body = `
+      <div class="quick-cash">
+        ${[totals.total, Math.ceil(totals.total/5)*5, Math.ceil(totals.total/10)*10, Math.ceil(totals.total/20)*20].filter((v,i,a)=>a.indexOf(v)===i).slice(0,4).map(v=>`<button onclick="setTendered(${v})">${fmtMoney(v)}</button>`).join('')}
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label>Amount tendered</label>
+        <input type="number" step="0.01" min="0" value="${co.tendered}" oninput="onTenderedInput(this)">
+      </div>
+      <div class="change-box ${diff<0?'neg':''}" id="change-box">
+        <span class="lbl">${diff<0?'Still due':'Change due'}</span>
+        <span class="amt">${fmtMoney(Math.abs(diff))}</span>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" id="confirm-cash-btn" ${diff<0?'disabled':''} onclick="completeSale('cash')">Confirm cash payment</button>`;
+  } else if(co.tab==='card'){
+    body = co.processing ? `
+      <div class="card-sim"><div class="spinner"></div><p style="font-size:13px;color:var(--text-soft);">Processing card payment…</p></div>` : `
+      <div class="card-sim">
+        <div class="cico">💳</div>
+        <p style="font-size:13.5px;color:var(--text-soft);margin-bottom:20px;">Simulate tap, insert or swipe for ${fmtMoney(totals.total)}</p>
+        <button class="btn btn-primary btn-lg btn-block" onclick="simulateCardPayment()">Confirm card payment</button>
+      </div>`;
+  } else if(co.tab==='split'){
+    const card = Math.max(0, totals.total - co.splitCash);
+    body = `
+      <div class="field">
+        <label>Cash amount</label>
+        <input type="number" step="0.01" min="0" max="${totals.total}" value="${co.splitCash}" oninput="onSplitCashInput(this)">
+      </div>
+      <div class="field">
+        <label>Card amount (remaining)</label>
+        <div class="due-box" style="padding:12px;"><span class="amt" id="split-card-amt" style="font-size:20px;">${fmtMoney(card)}</span></div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" id="confirm-split-btn" onclick="completeSale('split')">Confirm split payment</button>`;
+  }
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeCheckout()">
+    <div class="modal">
+      <div class="modal-head"><h2>Checkout</h2><button class="close" onclick="closeCheckout()">✕</button></div>
+      <div class="modal-body">
+        <div class="due-box"><div class="lbl">Amount due</div><div class="amt">${fmtMoney(totals.total)}</div></div>
+        <div class="pay-tabs">
+          <button class="pay-tab ${co.tab==='cash'?'active':''}" onclick="setPayTab('cash')">Cash</button>
+          <button class="pay-tab ${co.tab==='card'?'active':''}" onclick="setPayTab('card')">Card</button>
+          <button class="pay-tab ${co.tab==='split'?'active':''}" onclick="setPayTab('split')">Split</button>
+        </div>
+        ${body}
+      </div>
+    </div>
+  </div>`;
+}
+function simulateCardPayment(){
+  state.checkout.processing = true; render();
+  setTimeout(()=> completeSale('card'), 1000);
+}
+function completeSale(method){
+  const totals = cartTotals();
+  const co = state.checkout;
+  let tendered=null, change=null, splitCash=null, splitCard=null;
+  if(method==='cash'){ tendered=co.tendered; change=co.tendered-totals.total; }
+  if(method==='split'){ splitCash=co.splitCash; splitCard=Math.max(0,totals.total-co.splitCash); }
+  const sale = {
+    id: uid(), time: new Date(), staffName: state.currentStaff?.name || 'Unknown',
+    items: state.cart.map(i=>({name:i.name, price:i.price, qty:i.qty})),
+    exVat: totals.exVat, vat: totals.vat, total: totals.total,
+    method, tendered, change, splitCash, splitCard
+  };
+  state.sales.push(sale);
+  state.receipt = sale;
+  state.checkout.open = false;
+  state.cart = [];
+  render();
+}
+
+/* ============================ RECEIPT ============================ */
+function renderReceiptModal(){
+  const s = state.receipt; const b = state.business;
+  const payLine = s.method==='cash' ? `Cash · Tendered ${fmtMoney(s.tendered)} · Change ${fmtMoney(s.change)}`
+    : s.method==='card' ? 'Card payment' : `Split · Cash ${fmtMoney(s.splitCash)} + Card ${fmtMoney(s.splitCard)}`;
+  return `
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-head"><h2>Sale complete</h2><button class="close" onclick="closeReceipt()">✕</button></div>
+      <div class="modal-body" style="padding-top:0;">
+        <div id="receipt-print" class="receipt">
+          <div class="receipt-head">
+            <div class="receipt-logo">${logoNode()}</div>
+            <div class="bn">${esc(b.name)}</div>
+            <div class="meta">${s.time.toLocaleString('en-GB')}<br>Served by ${esc(s.staffName)}</div>
+          </div>
+          <div class="receipt-div"></div>
+          ${s.items.map(i=>`<div class="receipt-line"><span class="nm">${esc(i.qty)} × ${esc(i.name)}</span><span>${fmtMoney(i.price*i.qty)}</span></div>`).join('')}
+          <div class="receipt-div"></div>
+          <div class="receipt-tot"><span>Subtotal</span><span>${fmtMoney(s.exVat)}</span></div>
+          <div class="receipt-tot"><span>VAT</span><span>${fmtMoney(s.vat)}</span></div>
+          <div class="receipt-tot grand"><span>Total</span><span>${fmtMoney(s.total)}</span></div>
+          <div class="receipt-div"></div>
+          <div class="receipt-tot"><span>${payLine}</span></div>
+          <div class="receipt-foot">Thank you!<br>— ${esc(b.name)} —</div>
+          <div class="perf"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn btn-secondary btn-block" onclick="window.print()">Print receipt</button>
+          <button class="btn btn-primary btn-block" onclick="closeReceipt()">New sale</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+function closeReceipt(){ state.receipt=null; render(); }
+
+/* ============================ CONTROL PANEL ============================ */
+function openControlPanel(){ state.screen='controlpanel'; state.cp.tab='branding'; render(); }
+function backToTill(){ state.screen='till'; render(); }
+function setCpTab(t){ state.cp.tab=t; state.cp.editingProductId=null; state.cp.editingCategoryId=null; state.cp.editingStaffId=null; state.cp.addingProduct=null; render(); }
+
+function renderControlPanel(){
+  const nav = [
+    ['branding','🎨','Branding & setup'],
+    ['catalog', '🧾', typeLabel()+' & categories'],
+    ['staff','👥','Staff & access'],
+    ['reports','📊','Reports']
+  ];
+  return `
+  <div class="cp-wrap">
+    <div class="cp-sidebar">
+      <div class="cp-brand"><div class="lg">${logoNode()}</div><div class="nm">${esc(state.business.name)}</div></div>
+      <div class="cp-nav">
+        ${nav.map(([id,icon,label])=>`<button class="${state.cp.tab===id?'active':''}" onclick="setCpTab('${id}')">${icon} ${label}</button>`).join('')}
+      </div>
+      <div class="cp-sidebar-foot">
+        <button class="btn btn-secondary btn-block btn-sm" onclick="backToTill()">← Back to till</button>
+      </div>
+    </div>
+    <div class="cp-main">
+      ${state.cp.tab==='branding' ? renderCpBranding() : ''}
+      ${state.cp.tab==='catalog' ? renderCpCatalog() : ''}
+      ${state.cp.tab==='staff' ? renderCpStaff() : ''}
+      ${state.cp.tab==='reports' ? renderCpReports() : ''}
+    </div>
+  </div>`;
+}
+
+/* --- Branding tab --- */
+function renderCpBranding(){
+  const b = state.business;
+  return `
+  <div class="cp-topbar"><div><h1>Branding &amp; setup</h1><div class="sub">Your business identity across the till, receipts and login screen.</div></div></div>
+  <div class="card section-card">
+    <h3>Business details</h3>
+    <div class="sc-sub">Shown on the till header, login screen and receipts.</div>
+    <div class="field"><label>Business name</label><input type="text" id="cp-name" value="${esc(b.name)}"></div>
+    <div class="field">
+      <label>Business type</label>
+      <div class="type-grid">
+        ${['retail','cafe','salon','general'].map(t=>{ const m=typeMeta(t); return `
+          <div class="type-opt ${b.type===t?'sel':''}" onclick="cpSelectType('${t}')">
+            <div class="emo">${m.emo}</div><div class="lbl">${m.label}</div><div class="desc">${m.desc}</div>
+          </div>`; }).join('')}
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Currency symbol</label><input type="text" id="cp-currency" maxlength="3" value="${esc(b.currency)}"></div>
+      <div class="field"><label>VAT / tax rate (%)</label><input type="number" id="cp-taxrate" min="0" max="100" step="0.5" value="${b.taxRate}"></div>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="cp-taxinclusive" ${b.taxInclusive?'checked':''} style="width:auto;margin-right:8px;">Prices already include tax</label>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="saveCpDetails()">Save details</button></div>
+  </div>
+  <div class="card section-card">
+    <h3>Logo</h3>
+    <div class="sc-sub">Square images work best. Shown at small sizes across the app.</div>
+    <div class="logo-upload">
+      <div class="logo-preview" id="cp-logo-preview">${b.logo?`<img src="${b.logo}">`:'<span style="color:var(--text-mute);font-size:11px;">No logo</span>'}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-secondary btn-sm file-btn">Upload image<input type="file" accept="image/*" onchange="cpHandleLogoUpload(this)"></button>
+        ${b.logo?`<button class="btn btn-ghost btn-sm" onclick="cpRemoveLogo()">Remove logo</button>`:''}
+      </div>
+    </div>
+  </div>
+  <div class="card section-card">
+    <h3>Colours</h3>
+    <div class="sc-sub">Used for buttons, highlights and the till theme. Individual item buttons can override this in the catalog tab.</div>
+    <div class="color-row">
+      <div class="color-item"><input type="color" id="cp-primary" value="${b.primaryColor}"><span class="lbl">Primary</span></div>
+      <div class="color-item"><input type="color" id="cp-accent" value="${b.accentColor}"><span class="lbl">Accent</span></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="saveCpColors()">Save colours</button></div>
+  </div>`;
+}
+function cpSelectType(t){ state.business.type = t; render(); }
+function saveCpDetails(){
+  const b = state.business;
+  b.name = document.getElementById('cp-name').value.trim() || b.name;
+  b.currency = document.getElementById('cp-currency').value.trim() || b.currency;
+  b.taxRate = parseFloat(document.getElementById('cp-taxrate').value) || 0;
+  b.taxInclusive = document.getElementById('cp-taxinclusive').checked;
+  render();
+}
+function cpHandleLogoUpload(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { state.business.logo = e.target.result; render(); };
+  reader.readAsDataURL(file);
+}
+function cpRemoveLogo(){ state.business.logo=null; render(); }
+function saveCpColors(){
+  state.business.primaryColor = document.getElementById('cp-primary').value;
+  state.business.accentColor = document.getElementById('cp-accent').value;
+  applyTheme(); render();
+}
+
+/* --- Catalog tab --- */
+function renderCpCatalog(){
+  const b = state.business;
+  return `
+  <div class="cp-topbar">
+    <div><h1>${typeLabel()} &amp; categories</h1><div class="sub">Customise every button, price, colour and detail shown at the till.</div></div>
+    <button class="btn btn-primary" onclick="cpNewCategory()">+ New category</button>
+  </div>
+  ${state.categories.map(cat=>renderCatBlock(cat)).join('') || `<div class="empty-state"><div class="em">🗂️</div>No categories yet — add one to get started.</div>`}
+  `;
+}
+function renderCatBlock(cat){
+  const prods = state.products.filter(p=>p.categoryId===cat.id);
+  const editingCat = state.cp.editingCategoryId===cat.id;
+  return `
+  <div class="cat-block">
+    <div class="cat-block-head">
+      <div class="swd" style="background:${cat.color}"></div>
+      ${editingCat ? `<input type="text" id="cat-name-${cat.id}" value="${esc(cat.name)}" style="flex:1;padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);font-weight:700;font-size:13.5px;">
+        <input type="color" value="${cat.color}" id="cat-color-${cat.id}" style="width:34px;height:34px;">
+        <button class="btn btn-primary btn-sm" onclick="cpSaveCategory('${cat.id}')">Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="state.cp.editingCategoryId=null;render()">Cancel</button>`
+      : `<h4>${esc(cat.name)} <span style="color:var(--text-mute);font-weight:500;">(${prods.length})</span></h4>
+        <button class="icon-btn" onclick="state.cp.editingCategoryId='${cat.id}';render()" title="Rename">✎</button>
+        <button class="icon-btn" onclick="cpDeleteCategory('${cat.id}')" title="Delete category">🗑</button>
+        <button class="btn btn-secondary btn-sm" onclick="cpAddProduct('${cat.id}')">+ Add item</button>`}
+    </div>
+    ${state.cp.addingProduct===cat.id ? renderProductForm(null, cat.id) : ''}
+    <div class="prod-list">
+      ${prods.map(p => state.cp.editingProductId===p.id ? renderProductForm(p, cat.id) : renderProdRow(p)).join('')}
+    </div>
+  </div>`;
+}
+function renderProdRow(p){
+  return `
+  <div class="prod-row">
+    <div class="swatch" style="background:${p.color}">${p.emoji||'📦'}</div>
+    <div class="pinfo"><div class="pn">${esc(p.name)}</div>${p.details?`<div class="pd">${esc(p.details)}</div>`:''}</div>
+    <div class="pp">${fmtMoney(p.price)}</div>
+    <div class="prod-actions">
+      <button class="icon-btn" onclick="state.cp.editingProductId='${p.id}';render()" title="Edit">✎</button>
+      <button class="icon-btn" onclick="cpDeleteProduct('${p.id}')" title="Delete">🗑</button>
+    </div>
+  </div>`;
+}
+function renderProductForm(p, catId){
+  const isNew = !p;
+  const idBase = isNew ? 'new-'+catId : 'edit-'+p.id;
+  const color = p ? p.color : (state.categories.find(c=>c.id===catId)?.color || '#0D9488');
+  const emoji = p ? (p.emoji||'') : '';
+  return `
+  <div class="edit-form">
+    <div class="field-row">
+      <div class="field" style="margin-bottom:10px;"><label>Name</label><input type="text" id="${idBase}-name" value="${esc(p?p.name:'')}" placeholder="Item name"></div>
+      <div class="field" style="margin-bottom:10px;max-width:120px;"><label>Price</label><input type="number" step="0.01" min="0" id="${idBase}-price" value="${p?p.price:''}" placeholder="0.00"></div>
+    </div>
+    <div class="field" style="margin-bottom:10px;"><label>Details (optional)</label><input type="text" id="${idBase}-details" value="${esc(p?p.details:'')}" placeholder="Shown as a subtitle on the button"></div>
+    <div class="field" style="margin-bottom:6px;">
+      <label>Button colour</label>
+      <div class="swatch-picker">
+        ${PALETTE.map(c=>`<div class="swatch-opt ${c.toLowerCase()===color.toLowerCase()?'sel':''}" style="background:${c}" onclick="pickSwatch('${idBase}','${c}')" id="${idBase}-swopt-${c.replace('#','')}"></div>`).join('')}
+        <input type="color" id="${idBase}-color" value="${color}" style="width:26px;height:26px;padding:0;border-radius:7px;" oninput="clearSwatchSel('${idBase}')">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Icon</label>
+      <input type="text" id="${idBase}-emoji" value="${emoji}" maxlength="2" style="width:60px;text-align:center;font-size:16px;">
+      <div class="emoji-row">${EMOJI_SET.map(e=>`<button onclick="document.getElementById('${idBase}-emoji').value='${e}'">${e}</button>`).join('')}</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost btn-sm" onclick="${isNew?`state.cp.addingProduct=null;`:`state.cp.editingProductId=null;`}render()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="${isNew?`cpSaveNewProduct('${catId}','${idBase}')`:`cpSaveProduct('${p.id}','${idBase}')`}">Save item</button>
+    </div>
+  </div>`;
+}
+function pickSwatch(idBase, color){
+  document.getElementById(idBase+'-color').value = color;
+  document.querySelectorAll(`[id^="${idBase}-swopt-"]`).forEach(el=>el.classList.remove('sel'));
+  document.getElementById(idBase+'-swopt-'+color.replace('#','')).classList.add('sel');
+}
+function clearSwatchSel(idBase){ document.querySelectorAll(`[id^="${idBase}-swopt-"]`).forEach(el=>el.classList.remove('sel')); }
+function cpNewCategory(){
+  const name = prompt('Category name:'); if(!name) return;
+  state.categories.push({id:uid(), name:name.trim(), color: PALETTE[state.categories.length % PALETTE.length]});
+  render();
+}
+function cpSaveCategory(id){
+  const cat = state.categories.find(c=>c.id===id);
+  cat.name = document.getElementById('cat-name-'+id).value.trim() || cat.name;
+  cat.color = document.getElementById('cat-color-'+id).value;
+  state.cp.editingCategoryId = null;
+  render();
+}
+function cpDeleteCategory(id){
+  const hasProducts = state.products.some(p=>p.categoryId===id);
+  if(hasProducts){ alert('Move or delete the items in this category first.'); return; }
+  if(!confirm('Delete this category?')) return;
+  state.categories = state.categories.filter(c=>c.id!==id);
+  render();
+}
+function cpAddProduct(catId){ state.cp.addingProduct = catId; state.cp.editingProductId=null; render(); }
+function cpSaveNewProduct(catId, idBase){
+  const name = document.getElementById(idBase+'-name').value.trim();
+  const price = parseFloat(document.getElementById(idBase+'-price').value);
+  if(!name || isNaN(price) || price<0){ alert('Please enter a valid name and price.'); return; }
+  state.products.push({
+    id: uid(), categoryId: catId, name, price,
+    color: document.getElementById(idBase+'-color').value,
+    emoji: document.getElementById(idBase+'-emoji').value.trim(),
+    details: document.getElementById(idBase+'-details').value.trim()
+  });
+  state.cp.addingProduct = null;
+  render();
+}
+function cpSaveProduct(id, idBase){
+  const p = state.products.find(x=>x.id===id);
+  const name = document.getElementById(idBase+'-name').value.trim();
+  const price = parseFloat(document.getElementById(idBase+'-price').value);
+  if(!name || isNaN(price) || price<0){ alert('Please enter a valid name and price.'); return; }
+  p.name = name; p.price = price;
+  p.color = document.getElementById(idBase+'-color').value;
+  p.emoji = document.getElementById(idBase+'-emoji').value.trim();
+  p.details = document.getElementById(idBase+'-details').value.trim();
+  state.cp.editingProductId = null;
+  render();
+}
+function cpDeleteProduct(id){
+  if(!confirm('Delete this item?')) return;
+  state.products = state.products.filter(p=>p.id!==id);
+  render();
+}
+
+/* --- Staff tab --- */
+function renderCpStaff(){
+  return `
+  <div class="cp-topbar">
+    <div><h1>Staff &amp; access</h1><div class="sub">Admins can open the control panel. Cashiers can only use the till.</div></div>
+    <button class="btn btn-primary" onclick="cpAddStaffForm()">+ Add staff</button>
+  </div>
+  <div class="card section-card">
+    ${state.cp.addingStaff ? renderStaffForm(null) : ''}
+    <table class="data-table">
+      <thead><tr><th>Name</th><th>Role</th><th>PIN</th><th></th></tr></thead>
+      <tbody>
+        ${state.staff.map(s => state.cp.editingStaffId===s.id ? `<tr><td colspan="4">${renderStaffForm(s)}</td></tr>` : `
+          <tr>
+            <td>${esc(s.name)} ${s.id===state.currentStaff?.id?'<span class="hint">(you)</span>':''}</td>
+            <td><span class="badge ${s.role==='admin'?'badge-admin':'badge-cashier'}">${s.role}</span></td>
+            <td style="font-family:var(--font-mono);">••${s.pin.slice(-2)}</td>
+            <td><div class="prod-actions"><button class="icon-btn" onclick="state.cp.editingStaffId='${s.id}';render()">✎</button><button class="icon-btn" onclick="cpDeleteStaff('${s.id}')">🗑</button></div></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+function renderStaffForm(s){
+  const isNew = !s;
+  const idBase = isNew ? 'new-staff' : 'edit-staff-'+s.id;
+  return `
+  <div class="edit-form">
+    <div class="field-row">
+      <div class="field" style="margin-bottom:10px;"><label>Name</label><input type="text" id="${idBase}-name" value="${esc(s?s.name:'')}"></div>
+      <div class="field" style="margin-bottom:10px;max-width:120px;"><label>PIN</label><input type="text" inputmode="numeric" maxlength="4" id="${idBase}-pin" value="${s?s.pin:''}"></div>
+      <div class="field" style="margin-bottom:10px;max-width:140px;"><label>Role</label>
+        <select id="${idBase}-role">
+          <option value="cashier" ${s&&s.role==='cashier'?'selected':''}>Cashier</option>
+          <option value="admin" ${s&&s.role==='admin'?'selected':''}>Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost btn-sm" onclick="${isNew?'state.cp.addingStaff=false;':'state.cp.editingStaffId=null;'}render()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="${isNew?`cpSaveNewStaff('${idBase}')`:`cpSaveStaff('${s.id}','${idBase}')`}">Save staff member</button>
+    </div>
+  </div>`;
+}
+function cpAddStaffForm(){ state.cp.addingStaff = true; render(); }
+function cpSaveNewStaff(idBase){
+  const name = document.getElementById(idBase+'-name').value.trim();
+  const pin = document.getElementById(idBase+'-pin').value.trim();
+  const role = document.getElementById(idBase+'-role').value;
+  if(!name){ alert('Please enter a name.'); return; }
+  if(!/^\d{4}$/.test(pin)){ alert('PIN must be exactly 4 digits.'); return; }
+  if(state.staff.some(s=>s.pin===pin)){ alert('That PIN is already in use.'); return; }
+  state.staff.push({id:uid(), name, pin, role});
+  state.cp.addingStaff = false;
+  render();
+}
+function cpSaveStaff(id, idBase){
+  const s = state.staff.find(x=>x.id===id);
+  const name = document.getElementById(idBase+'-name').value.trim();
+  const pin = document.getElementById(idBase+'-pin').value.trim();
+  const role = document.getElementById(idBase+'-role').value;
+  if(!name){ alert('Please enter a name.'); return; }
+  if(!/^\d{4}$/.test(pin)){ alert('PIN must be exactly 4 digits.'); return; }
+  if(state.staff.some(x=>x.pin===pin && x.id!==id)){ alert('That PIN is already in use.'); return; }
+  if(s.role==='admin' && role!=='admin' && state.staff.filter(x=>x.role==='admin').length<=1){ alert('You must have at least one admin.'); return; }
+  s.name=name; s.pin=pin; s.role=role;
+  state.cp.editingStaffId = null;
+  render();
+}
+function cpDeleteStaff(id){
+  const s = state.staff.find(x=>x.id===id);
+  if(s.id===state.currentStaff?.id){ alert("You can't delete the account you're logged in as."); return; }
+  if(s.role==='admin' && state.staff.filter(x=>x.role==='admin').length<=1){ alert('You must have at least one admin.'); return; }
+  if(!confirm('Remove '+s.name+'?')) return;
+  state.staff = state.staff.filter(x=>x.id!==id);
+  render();
+}
+
+/* --- Reports tab --- */
+function renderCpReports(){
+  const sales = state.sales;
+  const totalRevenue = sales.reduce((s,x)=>s+x.total,0);
+  const count = sales.length;
+  const avg = count ? totalRevenue/count : 0;
+  const byMethod = {cash:0, card:0, split:0};
+  sales.forEach(s=> byMethod[s.method] += s.total);
+  const byCat = {};
+  sales.forEach(sale => sale.items.forEach(it=>{
+    const prod = state.products.find(p=>p.name===it.name);
+    const catName = prod ? (state.categories.find(c=>c.id===prod.categoryId)?.name || 'Other') : 'Other';
+    byCat[catName] = (byCat[catName]||0) + it.price*it.qty;
+  }));
+  const maxCat = Math.max(1, ...Object.values(byCat));
+  return `
+  <div class="cp-topbar">
+    <div><h1>Reports</h1><div class="sub">Live totals for this session.</div></div>
+    ${sales.length ? `<div style="display:flex;gap:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="exportSalesCsv()">⬇ Export CSV</button>
+      <button class="btn btn-secondary btn-sm" onclick="exportSalesPdf()">⬇ Export PDF</button>
+    </div>` : ''}
+  </div>
+  <div class="stat-grid">
+    <div class="card stat-card"><div class="lbl">Revenue</div><div class="val">${fmtMoney(totalRevenue)}</div></div>
+    <div class="card stat-card"><div class="lbl">Transactions</div><div class="val">${count}</div></div>
+    <div class="card stat-card"><div class="lbl">Average sale</div><div class="val">${fmtMoney(avg)}</div></div>
+  </div>
+  <div class="card section-card">
+    <h3>By payment method</h3><div class="sc-sub">Split of revenue across payment types.</div>
+    ${['cash','card','split'].map(m=>`
+      <div class="bar-row"><div class="bn" style="text-transform:capitalize;">${m}</div><div class="bar-track"><div class="bar-fill" style="width:${totalRevenue?(byMethod[m]/totalRevenue*100):0}%"></div></div><div class="bv">${fmtMoney(byMethod[m])}</div></div>`).join('')}
+  </div>
+  <div class="card section-card">
+    <h3>By category</h3><div class="sc-sub">Which categories are driving sales.</div>
+    ${Object.keys(byCat).length ? Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([name,val])=>`
+      <div class="bar-row"><div class="bn">${esc(name)}</div><div class="bar-track"><div class="bar-fill" style="width:${val/maxCat*100}%"></div></div><div class="bv">${fmtMoney(val)}</div></div>`).join('') : `<p style="color:var(--text-mute);font-size:13px;">No sales yet this session.</p>`}
+  </div>
+  <div class="card section-card">
+    <h3>Recent transactions</h3><div class="sc-sub">Tap a row to see the full breakdown.</div>
+    ${sales.length ? `<table class="data-table"><thead><tr><th>Time</th><th>Staff</th><th>Items</th><th>Payment</th><th>Total</th></tr></thead><tbody>
+      ${sales.slice().reverse().map(s=>`
+        <tr class="txn-row" onclick="toggleTxn('${s.id}')">
+          <td>${s.time.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td>
+          <td>${esc(s.staffName)}</td>
+          <td>${s.items.reduce((a,i)=>a+i.qty,0)} items</td>
+          <td style="text-transform:capitalize;">${s.method}</td>
+          <td style="font-family:var(--font-mono);">${fmtMoney(s.total)}</td>
+        </tr>
+        ${state.cp.expandedTxn===s.id ? `<tr><td colspan="5"><div class="txn-detail">${s.items.map(i=>`${i.qty} × ${esc(i.name)} — ${fmtMoney(i.price*i.qty)}`).join('<br>')}</div></td></tr>` : ''}
+      `).join('')}
+    </tbody></table>` : `<p style="color:var(--text-mute);font-size:13px;">No sales recorded yet — head to the till and ring something up.</p>`}
+  </div>`;
+}
+function toggleTxn(id){ state.cp.expandedTxn = state.cp.expandedTxn===id ? null : id; render(); }
+
+/* --- Report exports --- */
+function csvCell(v){ v = String(v??''); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }
+function exportSalesCsv(){
+  const rows = [['Transaction','Time','Staff','Item','Qty','Unit price','Line total','Payment method','Sale total']];
+  state.sales.forEach((s,idx)=>{
+    s.items.forEach(it=>{
+      rows.push([ idx+1, s.time.toLocaleString('en-GB'), s.staffName, it.name, it.qty,
+        it.price.toFixed(2), (it.price*it.qty).toFixed(2), s.method, s.total.toFixed(2) ]);
+    });
+  });
+  const csv = rows.map(r=>r.map(csvCell).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  downloadBlob(blob, sanitizeName(state.business.name)+'-sales-'+dateStamp()+'.csv');
+}
+function exportSalesPdf(){
+  const b = state.business;
+  const totalRevenue = state.sales.reduce((s,x)=>s+x.total,0);
+  const count = state.sales.length;
+  const avg = count ? totalRevenue/count : 0;
+  const byMethod = {cash:0,card:0,split:0};
+  state.sales.forEach(s=>byMethod[s.method]+=s.total);
+  const win = window.open('', '_blank');
+  if(!win){ alert('Please allow pop-ups to export the PDF, then use your browser\u2019s Save as PDF option.'); return; }
+  const rowsHtml = state.sales.slice().reverse().map(s=>`
+    <tr>
+      <td>${s.time.toLocaleString('en-GB')}</td>
+      <td>${esc(s.staffName)}</td>
+      <td>${s.items.map(i=>esc(i.qty+' \u00d7 '+i.name)).join('<br>')}</td>
+      <td style="text-transform:capitalize">${s.method}</td>
+      <td style="text-align:right;font-family:monospace">${fmtMoney(s.total)}</td>
+    </tr>`).join('');
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Sales report — ${esc(b.name)}</title>
+    <style>
+      body{font-family:'Inter',system-ui,Arial,sans-serif;color:#161A1F;margin:40px;}
+      h1{font-size:22px;margin:0 0 2px;} .meta{color:#6B7280;font-size:13px;margin-bottom:24px;}
+      .stats{display:flex;gap:14px;margin-bottom:24px;}
+      .stat{border:1px solid #E2E4E9;border-radius:12px;padding:14px 18px;flex:1;}
+      .stat .l{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#9AA1AC;font-weight:700;}
+      .stat .v{font-size:22px;font-weight:800;font-family:monospace;margin-top:4px;}
+      table{width:100%;border-collapse:collapse;font-size:12.5px;}
+      th{text-align:left;border-bottom:2px solid #161A1F;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.04em;}
+      td{padding:8px 10px;border-bottom:1px solid #EEF0F3;vertical-align:top;}
+      .pay{margin-bottom:24px;font-size:13px;color:#5B6270;}
+    </style></head><body>
+      <h1>${esc(b.name)}</h1>
+      <div class="meta">Sales report · Generated ${new Date().toLocaleString('en-GB')}</div>
+      <div class="stats">
+        <div class="stat"><div class="l">Revenue</div><div class="v">${fmtMoney(totalRevenue)}</div></div>
+        <div class="stat"><div class="l">Transactions</div><div class="v">${count}</div></div>
+        <div class="stat"><div class="l">Average sale</div><div class="v">${fmtMoney(avg)}</div></div>
+      </div>
+      <div class="pay">Cash ${fmtMoney(byMethod.cash)} · Card ${fmtMoney(byMethod.card)} · Split ${fmtMoney(byMethod.split)}</div>
+      <table><thead><tr><th>Time</th><th>Staff</th><th>Items</th><th>Payment</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>${rowsHtml}</tbody></table>
+      <script>window.onload=function(){setTimeout(function(){window.print();},250);};<\/script>
+    </body></html>`);
+  win.document.close();
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+function sanitizeName(n){ return (n||'business').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function dateStamp(){ const d=new Date(); return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0'); }
+
+/* ============================ INIT ============================ */
+applyTheme();
+render();
+setInterval(()=>{ const el = document.getElementById('th-clock'); if(el) el.textContent = new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'}); }, 30000);
+</script>
+</body>
+</html>
