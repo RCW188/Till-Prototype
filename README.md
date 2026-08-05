@@ -25,9 +25,12 @@ Open `till_1.html` directly, or visit the GitHub Pages deployment. Choose **"Exp
 
 **The brandability / customisation USP**
 - Full theme studio: logo, colours, corner-radius style, typeface, light/dark/auto appearance
+- **Branding depth, set per stage**: during setup (and any time after, from Control panel → Branding & theme) the owner chooses how strongly their identity shows up — *Subtle* (plain text, no logo), *Standard* (logo + brand colours, light touch) or *Bold* (full brand-colour bar, largest logo, watermark) — picked independently for the till screen, login screen, receipts and the customer display
+- **Multiple brand images**, not just one logo: an additional till watermark, login-screen background and receipt banner, each optional and each surfaced only where relevant (uploaded from Control panel → Branding & theme)
+- A design language closer to a traditional EPOS terminal than a generic app: solid brand-colour product keys with bold, plain-worded labels (no emoji anywhere in the till, checkout, receipt or customer-display screens — icons are words), a clear itemised order ticket, and function buttons (Tickets, No sale, Display, Control panel, Log out) instead of icon glyphs
 - Editable terminology (what your items are called), receipt template, paper width
 - 200+ business types across 13 industry groups, each mapped to a starter catalogue "configuration pack" (retail, café, bar, restaurant, takeaway, services, market stall, general)
-- A second, live customer-facing display screen (open via the 🖥 button) mirroring the current sale
+- A second, live customer-facing display screen (open via the "Display" button) mirroring the current sale, themed by its own branding depth
 
 **Trust & positioning differentiators from the case file**
 - Offline-first: all data lives in `localStorage` on the device; the app is fully usable with no connection, survives reloads, and installs as a PWA via `manifest.json` + `sw.js`

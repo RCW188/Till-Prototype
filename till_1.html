@@ -94,6 +94,12 @@ a{color:inherit;}
 .toggle-row .tinfo{flex:1;}
 .toggle-row .tname{font-weight:700;font-size:13.5px;}
 .toggle-row .tdesc{font-size:12px;color:var(--text-mute);margin-top:2px;}
+.brand-stage-list{display:flex;flex-direction:column;margin-bottom:14px;}
+.brand-stage-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-top:1px solid var(--surface-alt);flex-wrap:wrap;}
+.brand-stage-row:first-child{border-top:none;}
+.bsr-info{flex:1;min-width:130px;}
+.bsr-name{font-weight:700;font-size:13.5px;}
+.bsr-desc{font-size:11.5px;color:var(--text-mute);margin-top:2px;}
 .switch{position:relative;width:42px;height:24px;border-radius:100px;background:var(--surface-alt);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;transition:background .15s;}
 .switch::after{content:'';position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:var(--shadow-s);transition:transform .15s;}
 .switch.on{background:var(--primary);border-color:var(--primary);}
@@ -158,6 +164,9 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .logo-upload{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
 .logo-preview{width:72px;height:72px;border-radius:16px;background:var(--surface-alt);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1.5px dashed var(--border);flex-shrink:0;}
 .logo-preview img{width:100%;height:100%;object-fit:cover;}
+.brand-image-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.brand-image-slot .logo-preview{width:72px;height:52px;border-radius:10px;}
+.brand-image-slot .logo-preview[style*="width:96px"]{height:52px;}
 .color-row{display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap;}
 .color-item{display:flex;align-items:center;gap:10px;}
 .color-item .lbl{font-size:13px;font-weight:600;}
@@ -174,11 +183,22 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 
 /* ---------- PIN Login ---------- */
 .login-shell{max-width:380px;width:100%;text-align:center;}
+.center-screen.lvl-bold{background:var(--primary);background-size:cover;background-position:center;}
+.center-screen.lvl-bold .login-shell{color:#fff;}
 .login-brand{display:flex;flex-direction:column;align-items:center;margin-bottom:26px;}
-.login-logo{width:60px;height:60px;border-radius:16px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin-bottom:12px;overflow:hidden;}
+.login-logo{width:60px;height:60px;border-radius:var(--radius-m);background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;margin-bottom:12px;overflow:hidden;}
 .login-logo img{width:100%;height:100%;object-fit:cover;}
+.lvl-subtle .login-logo{display:none;}
+.lvl-bold .login-logo{width:80px;height:80px;font-size:26px;background:rgba(255,255,255,.22);}
 .login-brand h1{font-size:19px;}
 .login-brand .sub{color:var(--text-mute);font-size:12.5px;margin-top:2px;}
+.lvl-bold .login-brand .sub{color:rgba(255,255,255,.75);}
+.lvl-bold .pin-hint{background:rgba(255,255,255,.14);color:#fff;}
+.lvl-bold .pin-key{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff;}
+.lvl-bold .pin-key:hover{background:rgba(255,255,255,.22);}
+.lvl-bold .pin-key.wide{color:rgba(255,255,255,.85);}
+.lvl-bold .tagline{color:rgba(255,255,255,.7);}
+.lvl-bold .tagline b{color:#fff;}
 .pin-dots{display:flex;justify-content:center;gap:12px;margin:22px 0;}
 .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:background .12s,border-color .12s;}
 .pin-dot.filled{background:var(--primary);border-color:var(--primary);}
@@ -195,51 +215,77 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .pin-pad-sm button:hover{background:var(--surface-alt);}
 .pin-pad-sm button.wide{font-size:11px;color:var(--text-soft);}
 
-/* ---------- Till layout ---------- */
+/* ---------- Till layout ----------
+   Design language: solid brand-colour product keys, bold uppercase labels, plain-worded
+   function buttons instead of icon glyphs, and a clear itemised order ticket — closer to a
+   traditional EPOS terminal than a soft consumer app. How far the header/customer-display lean
+   into full brand colour is controlled by the owner's chosen branding depth per stage (see
+   brandStage()) rather than being fixed. */
 .till-wrap{display:flex;flex-direction:column;height:100vh;}
-.till-header{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
-.th-logo{width:36px;height:36px;border-radius:9px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;overflow:hidden;}
+.till-header{display:flex;align-items:center;gap:12px;padding:12px 22px;background:var(--surface);border-bottom:2px solid var(--border);flex-shrink:0;flex-wrap:wrap;transition:background .2s,border-color .2s;}
+.till-header.lvl-bold{background:var(--primary);border-bottom-color:transparent;box-shadow:var(--shadow-s);}
+.th-logo{width:38px;height:38px;border-radius:var(--radius-s);background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;overflow:hidden;flex-shrink:0;}
 .th-logo img{width:100%;height:100%;object-fit:cover;}
-.th-name{font-weight:800;font-size:15px;}
-.th-meta{font-size:11.5px;color:var(--text-mute);font-family:var(--font-mono);}
+.till-header.lvl-bold .th-logo{background:rgba(255,255,255,.22);width:44px;height:44px;font-size:15px;}
+.till-header.lvl-subtle .th-logo{display:none;}
+.th-name{font-weight:800;font-size:15.5px;letter-spacing:-.01em;}
+.th-meta{font-size:11px;color:var(--text-mute);font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.04em;}
+.till-header.lvl-bold .th-name{color:#fff;}
+.till-header.lvl-bold .th-meta{color:rgba(255,255,255,.75);}
 .th-spacer{flex:1;}
-.th-staff{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:var(--surface-alt);border-radius:100px;}
+.th-fn{display:flex;gap:8px;flex-wrap:wrap;}
+.fn-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:var(--surface);font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--text-soft);cursor:pointer;white-space:nowrap;transition:background .12s,border-color .12s;}
+.fn-btn:hover{background:var(--surface-alt);}
+.fn-btn .ct{background:var(--danger);color:#fff;border-radius:100px;padding:1px 6px;font-size:10px;font-family:var(--font-mono);}
+.till-header.lvl-bold .fn-btn{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.32);color:#fff;}
+.till-header.lvl-bold .fn-btn:hover{background:rgba(255,255,255,.24);}
+.till-header.lvl-bold .status-pill{background:rgba(255,255,255,.18);color:#fff;}
+.till-header.lvl-bold .status-pill.off{background:rgba(255,255,255,.18);color:#fff;}
+.till-header.lvl-bold .status-pill .dot{background:#fff;}
+.th-staff{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;background:var(--surface-alt);border-radius:var(--radius-s);}
 .th-staff-av{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
 .th-staff-name{font-size:12.5px;font-weight:700;}
+.till-header.lvl-bold .th-staff{background:rgba(255,255,255,.16);}
+.till-header.lvl-bold .th-staff-av{background:rgba(255,255,255,.32);}
+.till-header.lvl-bold .th-staff-name{color:#fff;}
 .till-main{flex:1;display:flex;overflow:hidden;}
-.till-products{flex:1;display:flex;flex-direction:column;padding:18px 20px;overflow:hidden;}
-.cat-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;flex-shrink:0;}
-.cat-tab{padding:9px 16px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
+.till-products{flex:1;display:flex;flex-direction:column;padding:18px 20px;overflow:hidden;position:relative;}
+.till-watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.05;z-index:0;overflow:hidden;}
+.till-watermark img{width:55%;max-width:380px;object-fit:contain;}
+.cat-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;flex-shrink:0;position:relative;z-index:1;}
+.cat-tab{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:var(--surface);font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;white-space:nowrap;transition:.15s;}
+.cat-tab .dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
 .cat-tab:hover{background:var(--surface-alt);}
 .cat-tab.active{background:var(--text);border-color:var(--text);color:var(--surface);}
-.search-row{margin-bottom:14px;flex-shrink:0;display:flex;gap:8px;}
-.search-row input{flex:1;padding:11px 14px;border-radius:11px;border:1.5px solid var(--border);font-size:14px;background:var(--surface);}
-.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;overflow-y:auto;padding-bottom:20px;align-content:start;}
-.product-btn{border:none;border-radius:16px;padding:16px 14px;text-align:left;cursor:pointer;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:var(--shadow-s);transition:transform .08s ease,box-shadow .15s ease;position:relative;}
+.cat-tab.active .dot{box-shadow:0 0 0 2px rgba(255,255,255,.4);}
+.search-row{margin-bottom:14px;flex-shrink:0;display:flex;gap:8px;position:relative;z-index:1;}
+.search-row input{flex:1;padding:11px 14px;border-radius:var(--radius-s);border:1.5px solid var(--border);font-size:14px;background:var(--surface);}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:12px;overflow-y:auto;padding-bottom:20px;align-content:start;position:relative;z-index:1;}
+.product-btn{border:none;border-left:5px solid rgba(255,255,255,.4);border-radius:var(--radius-m);padding:14px 14px 12px;text-align:left;cursor:pointer;min-height:88px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;box-shadow:var(--shadow-s);transition:transform .08s ease,box-shadow .15s ease;position:relative;}
 .product-btn:active{transform:scale(.96);}
-.product-btn .emo{font-size:19px;}
-.product-btn .nm{font-weight:700;font-size:13.5px;line-height:1.25;margin-top:6px;}
-.product-btn .dt{font-size:10.5px;opacity:.85;margin-top:1px;}
-.product-btn .pr{font-family:var(--font-mono);font-weight:700;font-size:14px;margin-top:8px;}
-.product-btn .stock-tag{position:absolute;top:8px;right:8px;font-size:9.5px;font-weight:800;background:rgba(0,0,0,.28);padding:2px 6px;border-radius:100px;font-family:var(--font-mono);}
+.product-btn .nm{font-weight:800;font-size:13.5px;line-height:1.28;text-transform:uppercase;letter-spacing:.01em;}
+.product-btn .dt{font-size:10.5px;opacity:.85;margin-top:3px;font-weight:600;text-transform:none;letter-spacing:0;}
+.product-btn .pr{font-family:var(--font-mono);font-weight:800;font-size:14.5px;margin-top:8px;}
+.pb-tags{display:flex;align-items:flex-start;margin-bottom:8px;}
+.product-btn .stock-tag{margin-left:auto;font-size:9.5px;font-weight:800;background:rgba(0,0,0,.3);padding:2px 6px;border-radius:5px;font-family:var(--font-mono);}
 .product-btn .stock-tag.low{background:var(--danger);}
-.product-btn .age-tag{position:absolute;top:8px;left:8px;font-size:10px;background:rgba(0,0,0,.3);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;}
-.empty-state{margin:auto;text-align:center;color:var(--text-mute);padding:40px;}
+.product-btn .age-tag{font-size:10px;background:rgba(0,0,0,.32);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
+.empty-state{margin:auto;text-align:center;color:var(--text-mute);padding:40px;font-weight:600;font-size:13.5px;}
 .empty-state .em{font-size:30px;margin-bottom:10px;}
 
-/* ---------- Cart ---------- */
-.cart-panel{width:370px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
+/* ---------- Cart / order ticket ---------- */
+.cart-panel{width:380px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
 .cart-head{padding:16px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;}
-.cart-head h3{font-size:15px;}
+.cart-head h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;}
 .cart-head-actions{display:flex;gap:6px;}
-.cart-customer{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--surface-alt);font-size:12.5px;}
+.cart-customer{display:flex;align-items:center;gap:8px;padding:10px 20px;border-bottom:1px solid var(--surface-alt);font-size:12.5px;font-weight:600;}
 .cart-customer .cav{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .cart-customer .cn{font-weight:700;flex:1;}
 .cart-customer .cp{color:var(--text-mute);font-family:var(--font-mono);font-size:11px;}
 .cart-items{flex:1;overflow-y:auto;padding:10px 16px;}
 .cart-empty{text-align:center;color:var(--text-mute);font-size:13px;padding:50px 20px;}
-.cart-line{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px solid var(--surface-alt);flex-wrap:wrap;}
-.cart-line .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cart-line{display:flex;align-items:center;gap:8px;padding:10px 4px;border-bottom:1px dashed var(--surface-alt);flex-wrap:wrap;}
+.cart-line .sw{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
 .cart-line .info{flex:1;min-width:0;}
 .cart-line .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cart-line .pr{font-size:11.5px;color:var(--text-mute);font-family:var(--font-mono);}
@@ -254,7 +300,8 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .cart-foot{padding:14px 20px 18px;border-top:1px solid var(--border);}
 .tot-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-soft);margin-bottom:6px;}
 .tot-row.disc{color:var(--success);}
-.tot-row.grand{font-size:19px;font-weight:800;color:var(--text);font-family:var(--font-mono);margin:10px 0 14px;}
+.tot-row.grand{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--text);background:var(--surface-alt);border-radius:var(--radius-s);padding:12px 14px;margin:10px 0 14px;}
+.tot-row.grand span:last-child{font-family:var(--font-mono);font-size:19px;}
 .cart-foot-actions{display:flex;gap:8px;}
 .cart-foot-row2{display:flex;gap:8px;margin-bottom:8px;}
 .cart-foot-row2 .btn{flex:1;}
@@ -288,7 +335,7 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .change-box.neg .amt{color:var(--danger);}
 .split-row{display:flex;gap:12px;margin-bottom:8px;}
 .card-sim{text-align:center;padding:30px 10px;}
-.card-sim .cico{font-size:34px;margin-bottom:12px;}
+.card-sim .cico{display:inline-block;font-family:var(--font-mono);font-weight:800;font-size:13px;letter-spacing:.1em;color:var(--text-soft);border:1.5px solid var(--border);border-radius:var(--radius-s);padding:10px 22px;margin-bottom:14px;}
 .spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:10px auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .way-mode-row{display:flex;gap:8px;margin-bottom:14px;}
@@ -408,14 +455,19 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 .file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:600;opacity:0;transition:opacity .25s,transform .25s;z-index:400;box-shadow:var(--shadow-m);pointer-events:none;max-width:88vw;text-align:center;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.display-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;background:var(--bg);}
-.display-screen .dlogo{width:88px;height:88px;border-radius:22px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:30px;margin-bottom:18px;overflow:hidden;}
+.display-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;background:var(--bg);transition:background .2s,color .2s;}
+.display-screen.lvl-bold{background:var(--primary);color:#fff;}
+.display-screen .dlogo{width:88px;height:88px;border-radius:var(--radius-l);background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:30px;margin-bottom:18px;overflow:hidden;}
 .display-screen .dlogo img{width:100%;height:100%;object-fit:cover;}
+.display-screen.lvl-subtle .dlogo{display:none;}
+.display-screen.lvl-bold .dlogo{width:108px;height:108px;font-size:36px;background:rgba(255,255,255,.22);}
 .display-screen h1{font-size:26px;margin-bottom:30px;}
 .display-screen .dlines{width:100%;max-width:480px;margin-bottom:20px;}
 .display-screen .dline{display:flex;justify-content:space-between;font-size:16px;padding:10px 0;border-bottom:1px solid var(--border);}
+.display-screen.lvl-bold .dline{border-bottom-color:rgba(255,255,255,.25);}
 .display-screen .dtotal{font-size:44px;font-weight:800;font-family:var(--font-mono);margin-top:10px;}
 .display-screen .dsub{color:var(--text-soft);margin-top:8px;font-size:14px;}
+.display-screen.lvl-bold .dsub{color:rgba(255,255,255,.8);}
 @media (max-width:860px){
   .till-main{flex-direction:column;}
   .cart-panel{width:100%;border-left:none;border-top:1px solid var(--border);max-height:46vh;}
@@ -451,6 +503,31 @@ const RADIUS_OPTS = {
   soft:{s:8,m:14,l:22,label:'Soft'},
   round:{s:13,m:20,l:32,label:'Round'}
 };
+/* ---------- Branding depth: how strongly identity shows up, per stage of the experience ---------- */
+const BRAND_LEVELS = [
+  {id:'subtle', label:'Subtle', desc:'Business name in plain text. No logo, no colour wash — quiet and functional.'},
+  {id:'standard', label:'Standard', desc:'Logo plus your brand colours, applied with a light touch.'},
+  {id:'bold', label:'Bold', desc:'Full brand-colour bar, largest logo, watermark — your identity leads.'}
+];
+const BRAND_STAGES = [
+  {id:'till', label:'Till screen', desc:'The header staff see all day while ringing up sales.'},
+  {id:'login', label:'Login screen', desc:'The PIN entry screen staff see at the start of a shift.'},
+  {id:'receipt', label:'Receipts', desc:'Printed and emailed receipts handed to customers.'},
+  {id:'display', label:'Customer display', desc:'The second screen facing customers at the counter.'}
+];
+const BRAND_IMAGE_SLOTS = [
+  {id:'watermark', label:'Till watermark', desc:'A faint mark behind the product grid when the till screen is set to Bold.'},
+  {id:'loginBg', label:'Login background', desc:'Full-screen backdrop behind the PIN pad when the login screen is set to Bold.', wide:true},
+  {id:'receiptBanner', label:'Receipt banner', desc:'A wide image across the top of receipts when receipts are set to Bold.', wide:true}
+];
+function brandStage(stage){
+  const b = state.business;
+  return (b.brand && b.brand.stages && b.brand.stages[stage]) || 'standard';
+}
+function brandImg(key){
+  const b = state.business;
+  return (b.brand && b.brand.images && b.brand.images[key]) || null;
+}
 const PROCESSORS = [
   {id:'own', name:'Your existing acquirer', rate:'Your negotiated rate', note:'Bring any merchant account — we never force a switch.'},
   {id:'square', name:'Square', rate:'1.6–1.75%', note:'Reference rate, published mid-2026.'},
@@ -755,7 +832,11 @@ function seedState(){
       paymentProcessor: 'own',
       stockTrackingEnabled: false, ageRestrictionEnabled: false,
       loyaltyEnabled: true, pointsPerPound: 1, pointValuePence: 1,
-      receipt: { footer: 'Thank you for your visit!', showAddress:false, address:'', phone:'', width:'80mm', showLogo:true }
+      receipt: { footer: 'Thank you for your visit!', showAddress:false, address:'', phone:'', width:'80mm', showLogo:true },
+      brand: {
+        stages: { till:'standard', login:'standard', receipt:'standard', display:'standard' },
+        images: { watermark:null, loginBg:null, receiptBanner:null }
+      }
     },
     categories: [], products: [], staff: [], customers: [],
     currentStaff: null,
@@ -1104,7 +1185,7 @@ function renderWizard(){
   let stepHtml = '';
   if(step===1){
     stepHtml = `
-      <div class="wizard-eyebrow">Step 1 of 4</div>
+      <div class="wizard-eyebrow">Step 1 of 5</div>
       <h2>Tell us about your business</h2>
       <div class="sub">This shapes the language, layout and starter catalogue of your till.</div>
       <div class="field">
@@ -1117,7 +1198,7 @@ function renderWizard(){
       </div>`;
   } else if(step===2){
     stepHtml = `
-      <div class="wizard-eyebrow">Step 2 of 4</div>
+      <div class="wizard-eyebrow">Step 2 of 5</div>
       <h2>Make it yours</h2>
       <div class="sub">Upload a logo, pick your colours and a style. Every one of these can be changed any time from the control panel — this is a brandable platform, not a fixed template.</div>
       <div class="field">
@@ -1154,7 +1235,25 @@ function renderWizard(){
       </div>`;
   } else if(step===3){
     stepHtml = `
-      <div class="wizard-eyebrow">Step 3 of 4</div>
+      <div class="wizard-eyebrow">Step 3 of 5</div>
+      <h2>How much branding?</h2>
+      <div class="sub">Choose how strongly your identity shows up at each stage of the experience — from quiet plain text to full brand colour. Change any of this later from the control panel.</div>
+      <div class="brand-stage-list">
+        ${BRAND_STAGES.map(st => `
+          <div class="brand-stage-row">
+            <div class="bsr-info">
+              <div class="bsr-name">${st.label}</div>
+              <div class="bsr-desc">${st.desc}</div>
+            </div>
+            <div class="chip-row">
+              ${BRAND_LEVELS.map(lv=>`<button class="chip ${brandStage(st.id)===lv.id?'sel-primary':''}" onclick="wizSetBrandStage('${st.id}','${lv.id}')">${lv.label}</button>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="hint">${BRAND_LEVELS.map(lv=>`<strong>${lv.label}</strong> — ${lv.desc}`).join('<br>')}</div>`;
+  } else if(step===4){
+    stepHtml = `
+      <div class="wizard-eyebrow">Step 4 of 5</div>
       <h2>Create your admin account</h2>
       <div class="sub">This account can access the control panel to manage products, staff and reports.</div>
       <div class="field">
@@ -1174,9 +1273,9 @@ function renderWizard(){
         </div>
         <div class="hint">Currency symbol and VAT / sales tax rate applied at checkout.</div>
       </div>`;
-  } else if(step===4){
+  } else if(step===5){
     stepHtml = `
-      <div class="wizard-eyebrow">Step 4 of 4</div>
+      <div class="wizard-eyebrow">Step 5 of 5</div>
       <h2>All set, ${esc(b.name||'there')}</h2>
       <div class="sub">Here's a quick summary. Everything — branding, catalogue, tax, payments — can be fine-tuned later from the control panel.</div>
       <div class="preview-strip" style="margin-bottom:18px;--pv-primary:${b.primaryColor};--pv-accent:${b.accentColor}">
@@ -1188,9 +1287,10 @@ function renderWizard(){
         <div class="field"><label>Business type</label><p style="font-size:14px;font-weight:600;">${typeMeta(b.type).label}</p></div>
         <div class="field"><label>Currency</label><p style="font-size:14px;font-weight:600;">${esc(b.currency)} · ${b.taxRate}% tax</p></div>
       </div>
+      <div class="hint" style="margin-bottom:6px;">Branding depth: ${BRAND_STAGES.map(st=>`${st.label.toLowerCase()} — ${BRAND_LEVELS.find(l=>l.id===brandStage(st.id)).label.toLowerCase()}`).join(', ')}.</div>
       <div class="hint" style="margin-bottom:6px;">We've added a starter catalogue for a ${typeMeta(b.type).label.toLowerCase()} — you can edit or remove every item from the control panel any time.</div>`;
   }
-  const dots = [1,2,3,4].map(n => `<div class="wizard-step-dot ${n===step?'active':n<step?'done':''}"></div>`).join('');
+  const dots = [1,2,3,4,5].map(n => `<div class="wizard-step-dot ${n===step?'active':n<step?'done':''}"></div>`).join('');
   return `
   <div class="center-screen">
     <div class="card wizard-shell">
@@ -1199,12 +1299,13 @@ function renderWizard(){
         ${stepHtml}
         <div class="wizard-actions">
           ${step>1 ? `<button class="btn btn-ghost" onclick="wizardBack()">Back</button>` : `<button class="btn btn-ghost" onclick="state.screen='welcome';render()">Cancel</button>`}
-          <button class="btn btn-primary" onclick="${step<4?'wizardNext()':'finishWizard()'}">${step<4?'Continue':'Enter till'}</button>
+          <button class="btn btn-primary" onclick="${step<5?'wizardNext()':'finishWizard()'}">${step<5?'Continue':'Enter till'}</button>
         </div>
       </div>
     </div>
   </div>`;
 }
+function wizSetBrandStage(stage, level){ state.business.brand.stages[stage] = level; render(); }
 function selectBizType(t){ syncWizStep1Fields(); state.business.type = t; render(); }
 function selectRadius(id){ state.business.radius = id; applyTheme(); render(); }
 function livePreviewColors(){
@@ -1231,7 +1332,7 @@ function wizardNext(){
     b.primaryColor = document.getElementById('wiz-primary').value;
     b.accentColor = document.getElementById('wiz-accent').value;
     applyTheme();
-  } else if(state.wizardStep===3){
+  } else if(state.wizardStep===4){
     const nm = document.getElementById('wiz-staff-name').value.trim();
     const pin = document.getElementById('wiz-staff-pin').value.trim();
     if(!nm){ alert('Please enter your name.'); return; }
@@ -1263,9 +1364,11 @@ function finishWizard(){
 /* ============================ PIN LOGIN ============================ */
 function renderLogin(){
   const b = state.business;
+  const lvl = brandStage('login');
+  const bg = lvl==='bold' ? brandImg('loginBg') : null;
   return `
-  <div class="center-screen">
-    <div class="login-shell">
+  <div class="center-screen lvl-${lvl}" style="${bg?`background-image:linear-gradient(rgba(0,0,0,.35),rgba(0,0,0,.35)),url('${bg}');`:''}">
+    <div class="login-shell lvl-${lvl}">
       <div class="login-brand">
         <div class="login-logo">${logoNode()}</div>
         <h1>${esc(b.name)}</h1>
@@ -1364,7 +1467,7 @@ function renderAgeGateModal(){
     <div class="modal" style="max-width:380px;">
       <div class="modal-head"><h2>Age check — Challenge 25</h2></div>
       <div class="modal-body" style="text-align:center;">
-        <div style="font-size:34px;margin-bottom:10px;">🪪</div>
+        <div class="badge badge-warn" style="margin-bottom:14px;">ID check required</div>
         <p style="font-size:14px;margin-bottom:4px;"><strong>${esc(p.name)}</strong> is age-restricted.</p>
         <p style="font-size:13px;color:var(--text-soft);margin-bottom:20px;">Confirm the customer looks 25 or over, or ask for ID. This check is logged for licensing evidence.</p>
         <div style="display:flex;gap:10px;">
@@ -1433,15 +1536,15 @@ function renderTicketsModal(){
           const total = t.cart.reduce((s,i)=>s+lineGrossFor(i),0);
           return `
           <div class="prod-row" style="margin-bottom:8px;">
-            <div class="swatch" style="background:var(--primary)">🧾</div>
+            <div class="swatch" style="background:var(--primary);font-size:13px;">${esc(getInitials(t.name))}</div>
             <div class="pinfo"><div class="pn">${esc(t.name)}</div><div class="pd">${t.cart.length} item${t.cart.length===1?'':'s'} · opened ${t.createdAt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div></div>
             <div class="pp">${fmtMoney(total)}</div>
             <div class="prod-actions">
               <button class="btn btn-primary btn-sm" onclick="recallTicket('${t.id}')">Recall</button>
-              <button class="icon-btn" onclick="deleteTicket('${t.id}')" title="Delete">🗑</button>
+              <button class="btn btn-ghost btn-sm" onclick="deleteTicket('${t.id}')" title="Delete">Delete</button>
             </div>
           </div>`;
-        }).join('') : `<div class="empty-state"><div class="em">🧾</div>No ${ticketLabel(true).toLowerCase()} parked right now.</div>`}
+        }).join('') : `<div class="empty-state">No ${ticketLabel(true).toLowerCase()} parked right now.</div>`}
       </div>
     </div>
   </div>`;
@@ -1478,7 +1581,7 @@ function renderCustomerPickerModal(){
               <div class="cav">${esc(getInitials(c.name))}</div>
               <div class="cinfo"><div class="cn">${esc(c.name)}</div><div class="cm">${esc(c.phone||c.email||'No contact info')}</div></div>
               <div class="cpts">${c.loyaltyPoints} pts</div>
-            </div>`).join('') : `<div class="empty-state"><div class="em">👤</div>No customers match.</div>`}
+            </div>`).join('') : `<div class="empty-state">No customers match.</div>`}
         </div>
         <div class="form-actions" style="margin-top:14px;"><button class="btn btn-secondary btn-block" onclick="quickAddCustomer()">+ Quick-add new customer</button></div>
       </div>
@@ -1499,9 +1602,11 @@ function renderTill(){
   const totals = cartTotals();
   const isAdmin = state.currentStaff && state.currentStaff.role==='admin';
   const cust = activeCustomer();
+  const tillLvl = brandStage('till');
+  const watermark = brandImg('watermark');
   return `
   <div class="till-wrap">
-    <div class="till-header">
+    <div class="till-header lvl-${tillLvl}">
       <div class="th-logo">${logoNode()}</div>
       <div>
         <div class="th-name">${esc(b.name)}</div>
@@ -1509,39 +1614,42 @@ function renderTill(){
       </div>
       <span class="status-pill ${state.online?'':'off'}"><span class="dot"></span>${state.online?'Online — syncing':'Offline — trading normally'}</span>
       <div class="th-spacer"></div>
-      <button class="icon-btn" title="Open ${ticketLabel(true).toLowerCase()}" onclick="openTicketsModal()">🧾${state.parkedTickets.length?` <span style="font-size:10px;">(${state.parkedTickets.length})</span>`:''}</button>
-      <button class="icon-btn" title="No sale (open drawer)" onclick="noSaleFlow()">🗄</button>
-      <button class="icon-btn" title="Customer display" onclick="window.open(location.pathname+'?display=1','_blank','width=480,height=640')">🖥</button>
-      ${isAdmin ? `<button class="btn btn-secondary btn-sm" onclick="openControlPanel()">⚙ Control panel</button>` : ''}
+      <div class="th-fn">
+        <button class="fn-btn" title="Open ${ticketLabel(true).toLowerCase()}" onclick="openTicketsModal()">${ticketLabel(true)}${state.parkedTickets.length?` <span class="ct">${state.parkedTickets.length}</span>`:''}</button>
+        <button class="fn-btn" title="No sale (open drawer)" onclick="noSaleFlow()">No sale</button>
+        <button class="fn-btn" title="Open customer display" onclick="window.open(location.pathname+'?display=1','_blank','width=480,height=640')">Display</button>
+        ${isAdmin ? `<button class="fn-btn" onclick="openControlPanel()">Control panel</button>` : ''}
+      </div>
       <div class="th-staff">
         <div class="th-staff-av">${getInitials(state.currentStaff?.name)}</div>
         <div class="th-staff-name">${esc(state.currentStaff?.name||'')}</div>
       </div>
-      <button class="icon-btn" title="Switch user / log out" onclick="logout()">⏻</button>
+      <button class="fn-btn" title="Switch user / log out" onclick="logout()">Log out</button>
     </div>
     <div class="till-main">
       <div class="till-products">
+        ${watermark && tillLvl==='bold' ? `<div class="till-watermark"><img src="${watermark}" alt=""></div>` : ''}
         <div class="search-row">
           <input type="text" placeholder="Search ${typeLabel().toLowerCase()} by name, SKU or barcode…" value="${esc(state.search)}" oninput="onTillSearch(this.value)">
         </div>
         <div class="cat-tabs">
-          ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !state.search ?'active':''}" onclick="selectCategory('${c.id}')">${esc(c.name)}</button>`).join('')}
+          ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !state.search ?'active':''}" onclick="selectCategory('${c.id}')"><span class="dot" style="background:${c.color||b.primaryColor}"></span>${esc(c.name)}</button>`).join('')}
         </div>
         <div class="product-grid">
           ${products.length ? products.map(p=>{
             const low = p.trackStock && p.stock<=p.lowStockThreshold;
             const out = p.trackStock && p.stock<=0;
+            const ageTag = p.ageRestricted && b.ageRestrictionEnabled ? `<div class="age-tag">18</div>` : '';
+            const stockTag = p.trackStock ? `<div class="stock-tag ${low?'low':''}">${out?'OUT':p.stock+' left'}</div>` : '';
             return `
             <button class="product-btn" style="background:${p.color||b.primaryColor};${out?'opacity:.5;':''}" onclick="addToCart('${p.id}')">
-              ${p.ageRestricted && b.ageRestrictionEnabled ? `<div class="age-tag">18</div>`:''}
-              ${p.trackStock ? `<div class="stock-tag ${low?'low':''}">${out?'OUT':p.stock+' left'}</div>` : ''}
-              <div class="emo">${p.emoji||'📦'}</div>
+              ${ageTag||stockTag ? `<div class="pb-tags">${ageTag}${stockTag}</div>` : ''}
               <div>
                 <div class="nm">${esc(p.name)}</div>
                 ${p.details?`<div class="dt">${esc(p.details)}</div>`:''}
               </div>
               <div class="pr">${fmtMoney(p.price)}</div>
-            </button>`;}).join('') : `<div class="empty-state"><div class="em">🗂️</div>No ${typeLabel().toLowerCase()} found</div>`}
+            </button>`;}).join('') : `<div class="empty-state">No ${typeLabel().toLowerCase()} found</div>`}
         </div>
       </div>
       <div class="cart-panel">
@@ -1557,7 +1665,7 @@ function renderTill(){
           <div class="cav">${esc(getInitials(cust.name))}</div>
           <div class="cn">${esc(cust.name)} <span style="color:var(--text-mute);font-weight:500;">· ${cust.loyaltyPoints} pts</span></div>
           <button class="icon-btn" style="width:26px;height:26px;" onclick="clearActiveCustomer()" title="Remove customer">✕</button>
-        </div>` : `<div class="cart-customer" style="cursor:pointer;color:var(--text-mute);" onclick="openCustomerPicker()">👤 <span>Attach a customer for loyalty points</span></div>`}
+        </div>` : `<div class="cart-customer" style="cursor:pointer;color:var(--text-mute);" onclick="openCustomerPicker()">Attach a customer for loyalty points</div>`}
         <div class="cart-items">
           ${state.cart.length ? state.cart.map(i=>`
             <div class="cart-line">
@@ -1578,7 +1686,7 @@ function renderTill(){
             </div>`).join('') : `<div class="cart-empty">Tap an item to add it to the sale</div>`}
         </div>
         <div class="cart-foot">
-          ${state.cart.length ? `<div class="cart-foot-row2"><button class="btn btn-secondary btn-sm" onclick="openOrderDiscount()">🏷 Discount sale</button><button class="btn btn-warn btn-sm" onclick="voidSaleFlow()">Void sale</button></div>`:''}
+          ${state.cart.length ? `<div class="cart-foot-row2"><button class="btn btn-secondary btn-sm" onclick="openOrderDiscount()">Discount sale</button><button class="btn btn-warn btn-sm" onclick="voidSaleFlow()">Void sale</button></div>`:''}
           <div class="tot-row"><span>Subtotal</span><span>${fmtMoney(totals.exVat)}</span></div>
           ${totals.discountAmt>0?`<div class="tot-row disc"><span>Discount</span><span>−${fmtMoney(totals.discountAmt)}</span></div>`:''}
           <div class="tot-row"><span>VAT (${b.taxRate}%)</span><span>${fmtMoney(totals.vat)}</span></div>
@@ -1846,7 +1954,7 @@ function renderCheckoutModal(){
     body = co.processing ? `
       <div class="card-sim"><div class="spinner"></div><p style="font-size:13px;color:var(--text-soft);">Processing card payment…</p></div>` : `
       <div class="card-sim">
-        <div class="cico">💳</div>
+        <div class="cico">CARD</div>
         <p style="font-size:13.5px;color:var(--text-soft);margin-bottom:20px;">Simulate tap, insert or swipe for ${fmtMoney(due)}</p>
         <button class="btn btn-primary btn-lg btn-block" onclick="simulateCardPayment()">Confirm card payment</button>
       </div>`;
@@ -1924,6 +2032,9 @@ function renderCheckoutModal(){
 /* ============================ RECEIPT ============================ */
 function renderReceiptModal(){
   const s = state.receipt; const b = state.business; const r = b.receipt;
+  const brandLvl = brandStage('receipt');
+  const showLogo = brandLvl!=='subtle' && r.showLogo;
+  const banner = brandLvl==='bold' ? brandImg('receiptBanner') : null;
   let payLine;
   if(s.method==='cash') payLine = `Cash · Tendered ${fmtMoney(s.tendered)} · Change ${fmtMoney(s.change)}`;
   else if(s.method==='card') payLine = 'Card payment';
@@ -1935,9 +2046,10 @@ function renderReceiptModal(){
     <div class="modal" style="max-width:${r.width==='58mm'?'320px':'380px'};">
       <div class="modal-head"><h2>Sale complete</h2><button class="close" onclick="closeReceipt()">✕</button></div>
       <div class="modal-body" style="padding-top:0;">
-        <div id="receipt-print" class="receipt" style="max-width:${r.width==='58mm'?'240px':'320px'};">
+        <div id="receipt-print" class="receipt" style="max-width:${r.width==='58mm'?'240px':'320px'};${brandLvl==='bold'?`border-top:4px solid ${b.primaryColor};`:''}">
+          ${banner ? `<img src="${banner}" alt="" style="width:100%;display:block;margin-bottom:10px;object-fit:cover;max-height:90px;">` : ''}
           <div class="receipt-head">
-            ${r.showLogo ? `<div class="receipt-logo">${logoNode()}</div>` : ''}
+            ${showLogo ? `<div class="receipt-logo">${logoNode()}</div>` : ''}
             <div class="bn">${esc(b.name)}</div>
             ${r.showAddress && r.address ? `<div class="meta">${esc(r.address)}</div>`:''}
             ${r.showAddress && r.phone ? `<div class="meta">${esc(r.phone)}</div>`:''}
@@ -1958,8 +2070,8 @@ function renderReceiptModal(){
           <div class="perf"></div>
         </div>
         <div class="receipt-choice-row">
-          <button class="btn btn-secondary" onclick="printReceipt()">🖨 Print</button>
-          <button class="btn btn-secondary" onclick="emailReceipt()">✉ Email</button>
+          <button class="btn btn-secondary" onclick="printReceipt()">Print</button>
+          <button class="btn btn-secondary" onclick="emailReceipt()">Email</button>
           <button class="btn btn-primary" onclick="closeReceipt()">No receipt / Done</button>
         </div>
       </div>
@@ -2056,6 +2168,41 @@ function renderCpBranding(){
     </div>
   </div>
   <div class="card section-card">
+    <h3>More brand pictures</h3>
+    <div class="sc-sub">Beyond the logo — extra images that appear when a stage below is set to “Bold”. All optional.</div>
+    <div class="brand-image-grid">
+      ${BRAND_IMAGE_SLOTS.map(slot => `
+        <div class="brand-image-slot">
+          <div class="logo-upload" style="margin-bottom:6px;">
+            <div class="logo-preview" style="${slot.wide?'width:96px;':''}">${brandImg(slot.id)?`<img src="${brandImg(slot.id)}">`:'<span style="color:var(--text-mute);font-size:11px;">None</span>'}</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn btn-secondary btn-sm file-btn">Upload<input type="file" accept="image/*" onchange="cpHandleBrandImageUpload(this,'${slot.id}')"></button>
+              ${brandImg(slot.id)?`<button class="btn btn-ghost btn-sm" onclick="cpRemoveBrandImage('${slot.id}')">Remove</button>`:''}
+            </div>
+          </div>
+          <div class="bsr-name">${slot.label}</div>
+          <div class="bsr-desc">${slot.desc}</div>
+        </div>`).join('')}
+    </div>
+  </div>
+  <div class="card section-card">
+    <h3>Branding depth</h3>
+    <div class="sc-sub">How strongly your identity shows up, chosen separately for each stage a customer or a member of staff sees. This is what was asked during setup — change it any time.</div>
+    <div class="brand-stage-list">
+      ${BRAND_STAGES.map(st => `
+        <div class="brand-stage-row">
+          <div class="bsr-info">
+            <div class="bsr-name">${st.label}</div>
+            <div class="bsr-desc">${st.desc}</div>
+          </div>
+          <div class="chip-row">
+            ${BRAND_LEVELS.map(lv=>`<button class="chip ${brandStage(st.id)===lv.id?'sel-primary':''}" onclick="cpSetBrandStage('${st.id}','${lv.id}')">${lv.label}</button>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="hint">${BRAND_LEVELS.map(lv=>`<strong>${lv.label}</strong> — ${lv.desc}`).join('<br>')}</div>
+  </div>
+  <div class="card section-card">
     <h3>Colours &amp; style</h3>
     <div class="sc-sub">Used for buttons, highlights and the till theme. Individual item buttons can override colour in the catalog tab.</div>
     <div class="color-row">
@@ -2139,6 +2286,14 @@ function cpHandleLogoUpload(input){
   reader.readAsDataURL(file);
 }
 function cpRemoveLogo(){ state.business.logo=null; render(); }
+function cpHandleBrandImageUpload(input, key){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { state.business.brand.images[key] = e.target.result; render(); };
+  reader.readAsDataURL(file);
+}
+function cpRemoveBrandImage(key){ state.business.brand.images[key] = null; render(); }
+function cpSetBrandStage(stage, level){ state.business.brand.stages[stage] = level; render(); }
 function saveCpColors(){
   state.business.primaryColor = document.getElementById('cp-primary').value;
   state.business.accentColor = document.getElementById('cp-accent').value;
@@ -2224,9 +2379,10 @@ function renderProductForm(p, catId){
       </div>
     </div>
     <div class="field" style="margin-bottom:10px;">
-      <label>Icon</label>
+      <label>Icon (back-office lists only)</label>
       <input type="text" id="${idBase}-emoji" value="${emoji}" maxlength="2" style="width:60px;text-align:center;font-size:16px;">
       <div class="emoji-row">${EMOJI_SET.map(e=>`<button onclick="document.getElementById('${idBase}-emoji').value='${e}'">${e}</button>`).join('')}</div>
+      <div class="hint">Helps you scan this list — the till itself keeps to colour and text, no icons.</div>
     </div>
     ${state.business.stockTrackingEnabled ? `
     <div class="toggle-row" style="border-top:none;padding-top:0;">
@@ -2929,8 +3085,9 @@ function renderCpCharter(){
 function renderCustomerDisplay(){
   const b = state.business;
   const totals = cartTotals();
+  const lvl = brandStage('display');
   return `
-  <div class="display-screen">
+  <div class="display-screen lvl-${lvl}">
     <div class="dlogo">${logoNode()}</div>
     <h1>${esc(b.name)}</h1>
     ${state.cart.length ? `
@@ -2945,7 +3102,10 @@ function renderCustomerDisplay(){
 function initCustomerDisplayIfNeeded(){
   const params = new URLSearchParams(location.search);
   if(params.get('display')==='1'){
+    const loaded = loadState();
+    if(loaded){ state.business = loaded.business; state.cart = loaded.cart; state.categories = loaded.categories; }
     state.screen = 'display';
+    applyTheme();
     render();
     window.addEventListener('storage', (e)=>{
       if(e.key===STORAGE_KEY){
