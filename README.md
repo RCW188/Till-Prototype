@@ -33,7 +33,7 @@ Open `till_1.html` directly, or visit the GitHub Pages deployment. Choose **"Exp
 - A second, live customer-facing display screen (open via the "Display" button) mirroring the current sale, themed by its own branding depth
 
 **Trust & positioning differentiators from the case file**
-- Offline-first: all data lives in `localStorage` on the device; the app is fully usable with no connection, survives reloads, and installs as a PWA via `manifest.json` + `sw.js`
+- Offline-first: all data lives in `localStorage` on the device while the till is in use (including live sync to the customer-facing display), and the app is fully usable with no connection and installs as a PWA via `manifest.json` + `sw.js`. By design, every fresh page load clears that storage and restarts from the beginning of setup — this prototype is meant to be re-demoed from scratch each time, not resumed session-to-session; use **Export all data** before reloading if you want to keep a run
 - Processor neutrality: a "Payments & hardware" settings tab for choosing/switching acquirer, cosmetic in this prototype but modelled as a swappable layer
 - Full data portability: export everything as JSON, or catalogue/sales as CSV, any time, plus import and a local data wipe
 - A published customer charter (rolling terms, no exit fees, capped price rises, your data, your hardware)

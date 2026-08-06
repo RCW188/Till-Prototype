@@ -3122,8 +3122,11 @@ function initCustomerDisplayIfNeeded(){
 (function init(){
   const isDisplay = initCustomerDisplayIfNeeded();
   if(isDisplay) return;
-  const loaded = loadState();
-  if(loaded) state = loaded;
+  // Every load starts fresh from the beginning of setup — no resuming a
+  // previous session. (The customer-display window above is the exception:
+  // it reads localStorage live, mid-session, to mirror the active sale.)
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  state = seedState();
   applyTheme();
   render();
   window.addEventListener('online', ()=>{ state.online = true; if(state.screen==='till') render(); });
