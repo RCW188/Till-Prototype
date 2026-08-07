@@ -270,6 +270,18 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .product-btn .stock-tag.low{background:var(--danger);}
 .product-btn .age-tag{font-size:10px;background:rgba(0,0,0,.32);width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;}
 .empty-state{margin:auto;text-align:center;color:var(--text-mute);padding:40px;font-weight:600;font-size:13.5px;}
+.layout-grid{display:grid;grid-template-columns:repeat(var(--layout-cols,6),1fr);grid-auto-rows:92px;gap:12px;overflow-y:auto;padding-bottom:20px;position:relative;z-index:1;}
+
+/* ---------- Till layout editor (settings) ---------- */
+.layout-editor-grid{display:grid;grid-template-columns:repeat(var(--layout-cols,6),1fr);grid-auto-rows:64px;gap:8px;max-height:600px;overflow-y:auto;}
+.layout-cell-empty{border:1.5px dashed var(--border);border-radius:var(--radius-s);background:transparent;color:var(--text-mute);font-size:20px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.layout-cell-empty:hover{background:var(--surface-alt);border-color:var(--primary);color:var(--primary);}
+.layout-cell-block{border:none;border-radius:var(--radius-s);color:#fff;cursor:pointer;padding:9px 10px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;box-shadow:var(--shadow-s);overflow:hidden;}
+.layout-cell-block .lb-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;opacity:.8;}
+.layout-cell-block .lb-name{font-size:12px;font-weight:800;line-height:1.25;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.size-stepper-row{display:flex;gap:22px;}
+.size-stepper{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-soft);}
+.size-stepper .sv{min-width:16px;text-align:center;color:var(--text);font-family:var(--font-mono);font-weight:800;}
 
 /* ---------- Cart / order ticket ---------- */
 .cart-panel{width:380px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
@@ -489,6 +501,22 @@ const PALETTE = ['#0D9488','#4F46E5','#DB2777','#DC2626','#D97706','#65A30D','#0
 const ICON_SEARCH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
 const ICON_EDIT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 const ICON_TRASH = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+/* ---------- Till layout (customisable block grid) ---------- */
+const LAYOUT_COLS = 6;      // grid columns for both the live till and the editor
+const LAYOUT_ROW_H = 92;    // px per row — matches the old auto product button height
+const LAYOUT_MAX_H = 4;     // tallest a single block can be, in rows
+const BLOCK_TYPES = [
+  {id:'product', label:'Product', desc:'Adds one specific catalogue item to the sale.'},
+  {id:'category', label:'Category link', desc:'Jumps to another category page on the till.'},
+  {id:'cash', label:'Cash', desc:'Goes straight to checkout with Cash selected.'},
+  {id:'card', label:'Card', desc:'Goes straight to checkout with Card selected.'},
+  {id:'discount', label:'Discount sale', desc:'Opens the whole-sale discount panel.'},
+  {id:'void', label:'Void sale', desc:'Voids the current sale (needs manager approval).'},
+  {id:'park', label:'Park sale', desc:'Holds the current sale to recall later.'},
+  {id:'nosale', label:'No sale', desc:'Opens the drawer with no transaction (needs manager approval).'},
+  {id:'customer', label:'Attach customer', desc:'Attaches a customer for loyalty points.'},
+  {id:'search', label:'Search', desc:'Jumps to the search box.'}
+];
 const FONT_OPTS = [
   {id:'inter', label:'Inter', stack:"'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", vibe:'Modern & neutral'},
   {id:'poppins', label:'Poppins', stack:"'Poppins',system-ui,sans-serif", vibe:'Friendly & rounded'},
@@ -854,7 +882,8 @@ function seedState(){
     customerPicker: { open:false, search:'' },
     online: (typeof navigator!=='undefined' ? navigator.onLine : true),
     cp: { tab:'branding', editingProductId:null, editingCategoryId:null, editingStaffId:null, addingProduct:null, addingStaff:false,
-      expandedTxn:null, typeSearch:'', editingCustomerId:null, addingCustomer:false, dataMsg:'', importPending:null }
+      expandedTxn:null, typeSearch:'', editingCustomerId:null, addingCustomer:false, dataMsg:'', importPending:null,
+      layoutCatId:null, blockEditor:null }
   };
 }
 let state = seedState();
@@ -896,6 +925,7 @@ function seedDemoData(s){
     {id:uid(),name:'Priya Shah',phone:'07700 900456',email:'priya@example.com',loyaltyPoints:8,visits:2,totalSpend:26.10}
   ];
   s.activeCategory = cats[0].id;
+  cats.forEach(cat=> cat.blocks = defaultBlocksForCategory(s.products, cat));
 }
 
 function seedStarterCatalog(){
@@ -926,6 +956,7 @@ function seedStarterCatalog(){
       state.products.push({id:uid(), categoryId:cid, name, price, color:group.color, details:'', sku:'', trackStock:false, stock:0, lowStockThreshold:5, ageRestricted:false});
     });
   });
+  state.categories.forEach(cat=> cat.blocks = defaultBlocksForCategory(state.products, cat));
   state.activeCategory = state.categories[0]?.id || null;
 }
 
@@ -933,6 +964,64 @@ function seedStarterCatalog(){
 function esc(str){ return String(str??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function fmtMoney(n){ return state.business.currency + (Math.round((n+Number.EPSILON)*100)/100).toFixed(2); }
 function getInitials(name){ if(!name) return '?'; const p = name.trim().split(/\s+/); return (p[0]?.[0]||'').toUpperCase() + (p[1]?.[0]||'').toUpperCase(); }
+
+/* ---------- Till layout helpers ---------- */
+function defaultBlocksForCategory(products, cat){
+  const prods = products.filter(p=>p.categoryId===cat.id);
+  return prods.map((p,i)=>({
+    id: uid(), type:'product', productId:p.id,
+    x: i % LAYOUT_COLS, y: Math.floor(i / LAYOUT_COLS), w:1, h:1,
+    color: p.color || '#0D9488', label: p.name
+  }));
+}
+function categoryBlocks(cat){
+  if(!cat) return [];
+  if(!cat.blocks) cat.blocks = defaultBlocksForCategory(state.products, cat);
+  cat.blocks = cat.blocks.filter(b=>{
+    if(b.type==='product') return state.products.some(p=>p.id===b.productId);
+    if(b.type==='category') return state.categories.some(c=>c.id===b.categoryId);
+    return true;
+  });
+  return cat.blocks;
+}
+function blockCells(b){
+  const cells = [];
+  for(let dy=0; dy<b.h; dy++) for(let dx=0; dx<b.w; dx++) cells.push({x:b.x+dx, y:b.y+dy});
+  return cells;
+}
+function isAreaFree(cat, x, y, w, h, excludeId){
+  if(x<0 || y<0 || w<1 || h<1 || x+w>LAYOUT_COLS) return false;
+  return categoryBlocks(cat).every(b=>{
+    if(b.id===excludeId) return true;
+    return !(x < b.x+b.w && x+w > b.x && y < b.y+b.h && y+h > b.y);
+  });
+}
+function nextFreeCell(cat, w, h){
+  const blocks = categoryBlocks(cat);
+  const maxY = blocks.reduce((m,b)=>Math.max(m,b.y+b.h), 0);
+  for(let y=0; y<=maxY+10; y++){
+    for(let x=0; x<=LAYOUT_COLS-w; x++){
+      if(isAreaFree(cat, x, y, w, h, null)) return {x,y};
+    }
+  }
+  return {x:0, y:maxY};
+}
+function layoutRowCount(cat){
+  const maxY = categoryBlocks(cat).reduce((m,b)=>Math.max(m,b.y+b.h), 0);
+  return Math.max(4, maxY+2);
+}
+function blockTypeMeta(type){ return BLOCK_TYPES.find(t=>t.id===type) || {label:type, desc:''}; }
+function blockDisplay(b){
+  if(b.type==='product'){
+    const p = state.products.find(x=>x.id===b.productId); if(!p) return null;
+    return {label: b.label || p.name, sub: fmtMoney(p.price), color: b.color};
+  }
+  if(b.type==='category'){
+    const c = state.categories.find(x=>x.id===b.categoryId); if(!c) return null;
+    return {label: b.label || c.name, sub:'Go to category', color: b.color};
+  }
+  return {label: b.label || blockTypeMeta(b.type).label, sub: (b.type==='cash'||b.type==='card') ? 'Quick pay' : 'Action', color: b.color};
+}
 function shade(hex, pct){
   hex = hex.replace('#','');
   let r = parseInt(hex.substring(0,2),16), g = parseInt(hex.substring(2,4),16), b = parseInt(hex.substring(4,6),16);
@@ -1149,7 +1238,8 @@ function render(){
     + (state.ticketsModal ? renderTicketsModal() : '')
     + (state.discountModal.open ? renderDiscountModal() : '')
     + (state.customerPicker.open ? renderCustomerPickerModal() : '')
-    + (state.refund.open ? renderRefundModal() : '');
+    + (state.refund.open ? renderRefundModal() : '')
+    + (state.cp.blockEditor && state.cp.blockEditor.open ? renderLayoutBlockModal() : '');
   if(state.screen === 'login'){ updatePinDots(); }
   if(state.screen !== 'display') scheduleSave();
 }
@@ -1591,8 +1681,10 @@ function renderTill(){
   const b = state.business;
   const cats = state.categories;
   if(!state.activeCategory && cats.length) state.activeCategory = cats[0].id;
-  let products = state.products.filter(p => p.categoryId === state.activeCategory);
-  if(state.search.trim()){
+  const activeCat = cats.find(c=>c.id===state.activeCategory);
+  const searching = !!state.search.trim();
+  let products = [];
+  if(searching){
     const q = state.search.trim().toLowerCase();
     products = state.products.filter(p => p.name.toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q));
   }
@@ -1630,8 +1722,9 @@ function renderTill(){
           <input type="text" placeholder="Search ${typeLabel().toLowerCase()} by name, SKU or barcode…" value="${esc(state.search)}" oninput="onTillSearch(this.value)">
         </div>
         <div class="cat-tabs">
-          ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !state.search ?'active':''}" onclick="selectCategory('${c.id}')"><span class="dot" style="background:${c.color||b.primaryColor}"></span>${esc(c.name)}</button>`).join('')}
+          ${cats.map(c=>`<button class="cat-tab ${c.id===state.activeCategory && !searching ?'active':''}" onclick="selectCategory('${c.id}')"><span class="dot" style="background:${c.color||b.primaryColor}"></span>${esc(c.name)}</button>`).join('')}
         </div>
+        ${searching ? `
         <div class="product-grid">
           ${products.length ? products.map(p=>{
             const low = p.trackStock && p.stock<=p.lowStockThreshold;
@@ -1647,7 +1740,7 @@ function renderTill(){
               </div>
               <div class="pr">${fmtMoney(p.price)}</div>
             </button>`;}).join('') : `<div class="empty-state">No ${typeLabel().toLowerCase()} found</div>`}
-        </div>
+        </div>` : renderLiveLayoutGrid(activeCat, isAdmin)}
       </div>
       <div class="cart-panel">
         <div class="cart-head">
@@ -1695,6 +1788,66 @@ function renderTill(){
       </div>
     </div>
   </div>`;
+}
+function renderLiveLayoutGrid(cat, isAdmin){
+  const b = state.business;
+  if(!cat){
+    return `<div class="empty-state">No categories yet.${isAdmin?' Add one from Control panel → '+esc(typeLabel())+'.':''}</div>`;
+  }
+  const blocks = categoryBlocks(cat);
+  if(!blocks.length){
+    return `<div class="empty-state">This category has no buttons yet.${isAdmin?' Add some from Control panel → Till layout.':''}</div>`;
+  }
+  return `<div class="layout-grid" style="--layout-cols:${LAYOUT_COLS};">
+    ${blocks.map(bl=>{
+      if(bl.type==='product'){
+        const p = state.products.find(x=>x.id===bl.productId); if(!p) return '';
+        const low = p.trackStock && p.stock<=p.lowStockThreshold;
+        const out = p.trackStock && p.stock<=0;
+        const ageTag = p.ageRestricted && b.ageRestrictionEnabled ? `<div class="age-tag">18</div>` : '';
+        const stockTag = p.trackStock ? `<div class="stock-tag ${low?'low':''}">${out?'OUT':p.stock+' left'}</div>` : '';
+        return `
+        <button class="product-btn" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};background:${bl.color};${out?'opacity:.5;':''}" onclick="fireBlockAction('${cat.id}','${bl.id}')">
+          ${ageTag||stockTag ? `<div class="pb-tags">${ageTag}${stockTag}</div>` : ''}
+          <div><div class="nm">${esc(bl.label||p.name)}</div></div>
+          <div class="pr">${fmtMoney(p.price)}</div>
+        </button>`;
+      }
+      const d = blockDisplay(bl); if(!d) return '';
+      return `
+      <button class="product-btn" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};background:${d.color};" onclick="fireBlockAction('${cat.id}','${bl.id}')">
+        <div><div class="nm">${esc(d.label)}</div></div>
+        <div class="dt" style="text-transform:none;">${esc(d.sub)}</div>
+      </button>`;
+    }).join('')}
+  </div>`;
+}
+function fireBlockAction(catId, blockId){
+  const cat = state.categories.find(c=>c.id===catId); if(!cat) return;
+  const block = categoryBlocks(cat).find(b=>b.id===blockId); if(!block) return;
+  switch(block.type){
+    case 'product': addToCart(block.productId); break;
+    case 'category': selectCategory(block.categoryId); break;
+    case 'cash': quickPay('cash'); break;
+    case 'card': quickPay('card'); break;
+    case 'discount':
+      if(!state.cart.length){ toast('Add items to the sale first.'); return; }
+      openOrderDiscount();
+      break;
+    case 'void':
+      if(!state.cart.length){ toast('Nothing to void — the sale is empty.'); return; }
+      voidSaleFlow();
+      break;
+    case 'park': parkCurrentSale(); break;
+    case 'nosale': noSaleFlow(); break;
+    case 'customer': openCustomerPicker(); break;
+    case 'search': document.querySelector('.search-row input')?.focus(); break;
+  }
+}
+function quickPay(method){
+  if(!state.cart.length){ toast('Add items to the sale first.'); return; }
+  openCheckout();
+  if(method==='card') setPayTab('card');
 }
 function onTillSearch(v){ state.search = v; render(); document.querySelector('.search-row input')?.focus(); }
 function selectCategory(id){ state.activeCategory = id; state.search=''; render(); }
@@ -2092,12 +2245,14 @@ function backToTill(){ state.screen='till'; render(); }
 function setCpTab(t){
   state.cp.tab=t; state.cp.editingProductId=null; state.cp.editingCategoryId=null; state.cp.editingStaffId=null;
   state.cp.addingProduct=null; state.cp.addingStaff=false; state.cp.editingCustomerId=null; state.cp.addingCustomer=false;
+  state.cp.blockEditor=null;
   render();
 }
 function renderControlPanel(){
   const nav = [
     ['branding','Branding & theme'],
     ['catalog', typeLabel()+' & categories'],
+    ['layout', 'Till layout'],
     ['stock','Stock control'],
     ['customers','Customers & loyalty'],
     ['staff','Staff & access'],
@@ -2120,6 +2275,7 @@ function renderControlPanel(){
     <div class="cp-main">
       ${state.cp.tab==='branding' ? renderCpBranding() : ''}
       ${state.cp.tab==='catalog' ? renderCpCatalog() : ''}
+      ${state.cp.tab==='layout' ? renderCpLayout() : ''}
       ${state.cp.tab==='stock' ? renderCpStock() : ''}
       ${state.cp.tab==='customers' ? renderCpCustomers() : ''}
       ${state.cp.tab==='staff' ? renderCpStaff() : ''}
@@ -2400,9 +2556,217 @@ function pickSwatch(idBase, color){
   document.getElementById(idBase+'-swopt-'+color.replace('#','')).classList.add('sel');
 }
 function clearSwatchSel(idBase){ document.querySelectorAll(`[id^="${idBase}-swopt-"]`).forEach(el=>el.classList.remove('sel')); }
+
+/* ---------- Till layout tab (customisable block grid editor) ---------- */
+function renderCpLayout(){
+  const cats = state.categories;
+  if(!cats.length){
+    return `
+    <div class="cp-topbar"><div><h1>Till layout</h1><div class="sub">Design exactly what appears on the till, category by category.</div></div></div>
+    <div class="card section-card" style="text-align:center;padding:40px 24px;">
+      <h3 style="margin-bottom:8px;">Add a category first</h3>
+      <p style="color:var(--text-soft);font-size:13.5px;">Till layout is built one category page at a time — add a category from the ${esc(typeLabel())} tab to get started.</p>
+    </div>`;
+  }
+  if(!state.cp.layoutCatId || !cats.some(c=>c.id===state.cp.layoutCatId)) state.cp.layoutCatId = cats[0].id;
+  const cat = cats.find(c=>c.id===state.cp.layoutCatId);
+  const blocks = categoryBlocks(cat);
+  const rows = layoutRowCount(cat);
+  const occ = {};
+  blocks.forEach(bl=> blockCells(bl).forEach(c=> occ[c.x+','+c.y]=true));
+  let emptyCells = '';
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<LAYOUT_COLS;x++){
+      if(occ[x+','+y]) continue;
+      emptyCells += `<button class="layout-cell-empty" style="grid-column:${x+1};grid-row:${y+1};" onclick="cpLayoutAddBlock('${cat.id}',${x},${y})" title="Add a block here">+</button>`;
+    }
+  }
+  const blockTiles = blocks.map(bl=>{
+    const d = blockDisplay(bl); if(!d) return '';
+    return `<button class="layout-cell-block" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};background:${d.color};" onclick="cpLayoutEditBlock('${cat.id}','${bl.id}')">
+      <div class="lb-type">${esc(blockTypeMeta(bl.type).label)}</div>
+      <div class="lb-name">${esc(d.label)}</div>
+    </button>`;
+  }).join('');
+  return `
+  <div class="cp-topbar">
+    <div><h1>Till layout</h1><div class="sub">Tap an empty cell to add a button, tap a button to edit, resize or remove it. Each category is its own page on the till.</div></div>
+  </div>
+  <div class="cat-tabs" style="margin-bottom:16px;">
+    ${cats.map(c=>`<button class="cat-tab ${c.id===cat.id?'active':''}" onclick="cpLayoutSelectCategory('${c.id}')"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</button>`).join('')}
+  </div>
+  <div class="card section-card" style="padding:16px;">
+    <div class="layout-editor-grid" style="--layout-cols:${LAYOUT_COLS};">
+      ${blockTiles}${emptyCells}
+    </div>
+  </div>`;
+}
+function cpLayoutSelectCategory(id){ state.cp.layoutCatId = id; render(); }
+function cpLayoutAddBlock(catId, x, y){
+  const otherCat = state.categories.find(c=>c.id!==catId) || null;
+  const firstProduct = state.products[0] || null;
+  state.cp.blockEditor = {
+    open:true, catId, blockId:null, x, y, w:1, h:1, type:'product',
+    color: firstProduct ? (firstProduct.color||'#0D9488') : '#0D9488',
+    label: firstProduct ? firstProduct.name : 'Product',
+    productId: firstProduct ? firstProduct.id : '',
+    categoryId: otherCat ? otherCat.id : ''
+  };
+  render();
+}
+function cpLayoutEditBlock(catId, blockId){
+  const cat = state.categories.find(c=>c.id===catId); if(!cat) return;
+  const bl = categoryBlocks(cat).find(b=>b.id===blockId); if(!bl) return;
+  state.cp.blockEditor = {
+    open:true, catId, blockId, x:bl.x, y:bl.y, w:bl.w, h:bl.h, type:bl.type,
+    color: bl.color, label: bl.label,
+    productId: bl.productId || (state.products[0]?.id||''),
+    categoryId: bl.categoryId || (state.categories.find(c=>c.id!==catId)?.id||'')
+  };
+  render();
+}
+function cpLayoutCloseEditor(){ state.cp.blockEditor = null; render(); }
+function cpLayoutSetType(t){
+  const be = state.cp.blockEditor; be.type = t;
+  if(t==='product'){
+    const p = state.products.find(x=>x.id===be.productId) || state.products[0] || null;
+    be.productId = p ? p.id : '';
+    be.label = p ? p.name : 'Product';
+    be.color = p ? (p.color||'#0D9488') : '#0D9488';
+  } else if(t==='category'){
+    const c = state.categories.find(x=>x.id===be.categoryId && x.id!==be.catId) || state.categories.find(x=>x.id!==be.catId) || null;
+    be.categoryId = c ? c.id : '';
+    be.label = c ? c.name : 'Category';
+    be.color = c ? c.color : state.business.primaryColor;
+  } else {
+    be.label = blockTypeMeta(t).label;
+    be.color = state.business.accentColor;
+  }
+  render();
+}
+function cpLayoutSetProduct(id){
+  const be = state.cp.blockEditor; be.productId = id;
+  const p = state.products.find(x=>x.id===id); if(!p) return;
+  be.label = p.name;
+  const labelEl = document.getElementById('lbe-label'); if(labelEl) labelEl.value = p.name;
+  cpLayoutPickColor(p.color || '#0D9488');
+}
+function cpLayoutSetCategoryRef(id){
+  const be = state.cp.blockEditor; be.categoryId = id;
+  const c = state.categories.find(x=>x.id===id); if(!c) return;
+  be.label = c.name;
+  const labelEl = document.getElementById('lbe-label'); if(labelEl) labelEl.value = c.name;
+  cpLayoutPickColor(c.color);
+}
+function cpLayoutPickColor(color){
+  const be = state.cp.blockEditor; be.color = color;
+  document.querySelectorAll('.lbe-swatch').forEach(el=>el.classList.remove('sel'));
+  const target = document.getElementById('lbe-swatch-'+color.replace('#',''));
+  if(target) target.classList.add('sel');
+}
+function cpLayoutResize(dw, dh){
+  const be = state.cp.blockEditor;
+  be.w = Math.min(LAYOUT_COLS, Math.max(1, be.w+dw));
+  be.h = Math.min(LAYOUT_MAX_H, Math.max(1, be.h+dh));
+  render();
+}
+function cpLayoutSaveBlock(){
+  const be = state.cp.blockEditor;
+  const cat = state.categories.find(c=>c.id===be.catId); if(!cat) return;
+  if(!isAreaFree(cat, be.x, be.y, be.w, be.h, be.blockId)){ toast('That space overlaps another block — shrink it or pick a different spot.'); return; }
+  if(be.type==='product' && !be.productId){ toast('Add a product to your catalogue first.'); return; }
+  if(be.type==='category' && !be.categoryId){ toast('Add another category first.'); return; }
+  const label = (be.label||'').trim() || blockTypeMeta(be.type).label;
+  const data = {
+    type: be.type, x: be.x, y: be.y, w: be.w, h: be.h, color: be.color, label,
+    productId: be.type==='product' ? be.productId : undefined,
+    categoryId: be.type==='category' ? be.categoryId : undefined
+  };
+  const blocks = categoryBlocks(cat);
+  if(be.blockId){
+    const existing = blocks.find(b=>b.id===be.blockId);
+    Object.assign(existing, data);
+    if(data.productId===undefined) delete existing.productId;
+    if(data.categoryId===undefined) delete existing.categoryId;
+  } else {
+    blocks.push({ id: uid(), ...data });
+  }
+  state.cp.blockEditor = null;
+  render();
+  toast('Till layout updated.');
+}
+function cpLayoutDeleteBlock(){
+  const be = state.cp.blockEditor; if(!be || !be.blockId) return;
+  if(!confirm('Remove this block from the till?')) return;
+  const cat = state.categories.find(c=>c.id===be.catId); if(!cat) return;
+  cat.blocks = categoryBlocks(cat).filter(b=>b.id!==be.blockId);
+  state.cp.blockEditor = null;
+  render();
+}
+function renderLayoutBlockModal(){
+  const be = state.cp.blockEditor;
+  const isNew = !be.blockId;
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) cpLayoutCloseEditor()">
+    <div class="modal" style="max-width:440px;">
+      <div class="modal-head"><h2>${isNew?'Add a block':'Edit block'}</h2><button class="close" onclick="cpLayoutCloseEditor()">✕</button></div>
+      <div class="modal-body">
+        <div class="field">
+          <label>This block</label>
+          <div class="chip-row">
+            ${BLOCK_TYPES.map(t=>`<button class="chip ${be.type===t.id?'sel-primary':''}" onclick="cpLayoutSetType('${t.id}')">${esc(t.label)}</button>`).join('')}
+          </div>
+          <div class="hint">${esc(blockTypeMeta(be.type).desc)}</div>
+        </div>
+        ${be.type==='product' ? `
+        <div class="field">
+          <label>Item</label>
+          <select id="lbe-product" onchange="cpLayoutSetProduct(this.value)">
+            ${state.products.length ? state.categories.map(c=>{
+              const opts = state.products.filter(p=>p.categoryId===c.id).map(p=>`<option value="${p.id}" ${p.id===be.productId?'selected':''}>${esc(p.name)} — ${fmtMoney(p.price)}</option>`).join('');
+              return opts ? `<optgroup label="${esc(c.name)}">${opts}</optgroup>` : '';
+            }).join('') : `<option value="">No items in your catalogue yet</option>`}
+          </select>
+        </div>` : ''}
+        ${be.type==='category' ? `
+        <div class="field">
+          <label>Goes to category</label>
+          <select id="lbe-category" onchange="cpLayoutSetCategoryRef(this.value)">
+            ${state.categories.map(c=>`<option value="${c.id}" ${c.id===be.categoryId?'selected':''}>${esc(c.name)}</option>`).join('')}
+          </select>
+        </div>` : ''}
+        <div class="field">
+          <label>Label on the till</label>
+          <input type="text" id="lbe-label" value="${esc(be.label)}" oninput="state.cp.blockEditor.label=this.value" maxlength="40">
+        </div>
+        <div class="field">
+          <label>Colour</label>
+          <div class="swatch-picker">
+            ${PALETTE.map(c=>`<div class="swatch-opt lbe-swatch ${be.color.toLowerCase()===c.toLowerCase()?'sel':''}" id="lbe-swatch-${c.replace('#','')}" style="background:${c}" onclick="cpLayoutPickColor('${c}')"></div>`).join('')}
+            <input type="color" value="${be.color}" style="width:26px;height:26px;padding:0;border-radius:7px;" oninput="cpLayoutPickColor(this.value)">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:6px;">
+          <label>Size on the till</label>
+          <div class="size-stepper-row">
+            <div class="size-stepper"><span>Width</span><button class="icon-btn" style="width:30px;height:30px;" onclick="cpLayoutResize(-1,0)">−</button><span class="sv">${be.w}</span><button class="icon-btn" style="width:30px;height:30px;" onclick="cpLayoutResize(1,0)">+</button></div>
+            <div class="size-stepper"><span>Height</span><button class="icon-btn" style="width:30px;height:30px;" onclick="cpLayoutResize(0,-1)">−</button><span class="sv">${be.h}</span><button class="icon-btn" style="width:30px;height:30px;" onclick="cpLayoutResize(0,1)">+</button></div>
+          </div>
+        </div>
+        <div class="form-actions" style="justify-content:space-between;">
+          ${!isNew ? `<button class="btn btn-warn btn-sm" onclick="cpLayoutDeleteBlock()">Remove</button>` : '<span></span>'}
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="cpLayoutCloseEditor()">Cancel</button>
+            <button class="btn btn-primary btn-sm" onclick="cpLayoutSaveBlock()">Save block</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
 function cpNewCategory(){
   const name = prompt('Category name:'); if(!name) return;
-  state.categories.push({id:uid(), name:name.trim(), color: PALETTE[state.categories.length % PALETTE.length]});
+  state.categories.push({id:uid(), name:name.trim(), color: PALETTE[state.categories.length % PALETTE.length], blocks:[]});
   render();
 }
 function cpSaveCategory(id){
@@ -2417,6 +2781,8 @@ function cpDeleteCategory(id){
   if(hasProducts){ alert('Move or delete the items in this category first.'); return; }
   if(!confirm('Delete this category?')) return;
   state.categories = state.categories.filter(c=>c.id!==id);
+  state.categories.forEach(cat=> categoryBlocks(cat)); // prunes any "category link" block that pointed at the deleted category
+  if(state.cp.layoutCatId===id) state.cp.layoutCatId = null;
   render();
 }
 function cpAddProduct(catId){ state.cp.addingProduct = catId; state.cp.editingProductId=null; render(); }
@@ -2437,7 +2803,13 @@ function readProductFormFields(idBase){
 function cpSaveNewProduct(catId, idBase){
   const f = readProductFormFields(idBase);
   if(!f.name || isNaN(f.price) || f.price<0){ alert('Please enter a valid name and price.'); return; }
-  state.products.push({ id: uid(), categoryId: catId, ...f });
+  const newId = uid();
+  state.products.push({ id: newId, categoryId: catId, ...f });
+  const cat = state.categories.find(c=>c.id===catId);
+  if(cat){
+    const {x,y} = nextFreeCell(cat, 1, 1);
+    categoryBlocks(cat).push({ id: uid(), type:'product', productId:newId, x, y, w:1, h:1, color: f.color, label: f.name });
+  }
   state.cp.addingProduct = null;
   render();
 }
@@ -2452,6 +2824,7 @@ function cpSaveProduct(id, idBase){
 function cpDeleteProduct(id){
   if(!confirm('Delete this item?')) return;
   state.products = state.products.filter(p=>p.id!==id);
+  state.categories.forEach(cat=> categoryBlocks(cat)); // prunes any block that pointed at the deleted item
   render();
 }
 
