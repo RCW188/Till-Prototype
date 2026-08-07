@@ -282,6 +282,45 @@ input[type=color]::-webkit-color-swatch-wrapper{padding:0;}
 .size-stepper-row{display:flex;gap:22px;}
 .size-stepper{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-soft);}
 .size-stepper .sv{min-width:16px;text-align:center;color:var(--text);font-family:var(--font-mono);font-weight:800;}
+.layout-cell-block.type-spacer{background:transparent!important;border:1.5px dashed var(--border);color:var(--text-mute);box-shadow:none;}
+.layout-cell-block.type-label{background:var(--surface-alt)!important;color:var(--text);border:1.5px solid var(--border);box-shadow:none;}
+.fn-btn:disabled{opacity:.5;cursor:default;}
+
+/* ---------- Till layout builder (full-screen configure mode) ---------- */
+.builder-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 22px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;flex-wrap:wrap;}
+.builder-sections{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.builder-sect-tab{display:inline-flex;align-items:center;gap:1px;border-radius:100px;border:1.5px solid var(--border);background:var(--surface);padding:3px;transition:border-color .15s,background .15s;}
+.builder-sect-tab.active{border-color:var(--primary);background:var(--primary-light);}
+.builder-sect-tab .bst-main{display:inline-flex;align-items:center;gap:7px;border:none;background:none;padding:7px 6px 7px 10px;border-radius:100px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;color:var(--text);}
+.builder-sect-tab .bst-main .dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;display:inline-block;}
+.builder-sect-tab .bst-ic{width:24px;height:24px;border-radius:50%;border:none;background:none;display:inline-flex;align-items:center;justify-content:center;color:var(--text-mute);cursor:pointer;flex-shrink:0;padding:0;}
+.builder-sect-tab .bst-ic:hover{background:var(--surface-alt);color:var(--text);}
+.builder-sect-edit{display:inline-flex;align-items:center;gap:6px;padding:3px;}
+.builder-sect-edit input[type=text]{padding:8px 10px;border-radius:100px;border:1.5px solid var(--border);font-weight:700;font-size:12.5px;width:140px;background:var(--surface);color:var(--text);}
+.builder-sect-edit input[type=color]{width:30px;height:30px;padding:2px;border-radius:8px;}
+.builder-add-section{border:1.5px dashed var(--border);background:transparent;border-radius:100px;padding:8px 16px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--text-soft);cursor:pointer;white-space:nowrap;}
+.builder-add-section:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+.builder-canvas .layout-editor-grid{max-height:none;flex:1;min-height:0;}
+.builder-palette{width:340px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;padding:18px;overflow:hidden;}
+.bp-head h3{font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+.bp-head .sc-sub{margin-bottom:14px;}
+.bp-search{margin-bottom:4px;}
+.bp-list{flex:1;overflow-y:auto;margin:0 -6px;padding:0 6px 10px;}
+.bp-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-mute);font-weight:700;margin:16px 0 8px;}
+.bp-group-label:first-child{margin-top:4px;}
+.bp-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px;border-radius:12px;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;margin-bottom:7px;transition:background .15s,border-color .15s;}
+.bp-item:hover{background:var(--surface-alt);border-color:var(--primary);}
+.bp-item:disabled{opacity:.4;cursor:not-allowed;}
+.bp-dot{width:11px;height:11px;border-radius:4px;flex-shrink:0;}
+.bp-info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.bp-name{font-weight:700;font-size:12.5px;}
+.bp-desc{font-size:11px;color:var(--text-mute);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.chip-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-mute);font-weight:700;margin:14px 0 6px;}
+.chip-group-label:first-child{margin-top:0;}
+@media (max-width:860px){
+  .builder-canvas{min-height:340px;}
+  .builder-palette{width:100%;border-left:none;border-top:1px solid var(--border);max-height:46vh;}
+}
 
 /* ---------- Cart / order ticket ---------- */
 .cart-panel{width:380px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;}
@@ -506,17 +545,37 @@ const LAYOUT_COLS = 6;      // grid columns for both the live till and the edito
 const LAYOUT_ROW_H = 92;    // px per row — matches the old auto product button height
 const LAYOUT_MAX_H = 4;     // tallest a single block can be, in rows
 const BLOCK_TYPES = [
-  {id:'product', label:'Product', desc:'Adds one specific catalogue item to the sale.'},
-  {id:'category', label:'Category link', desc:'Jumps to another category page on the till.'},
-  {id:'cash', label:'Cash', desc:'Goes straight to checkout with Cash selected.'},
-  {id:'card', label:'Card', desc:'Goes straight to checkout with Card selected.'},
-  {id:'discount', label:'Discount sale', desc:'Opens the whole-sale discount panel.'},
-  {id:'void', label:'Void sale', desc:'Voids the current sale (needs manager approval).'},
-  {id:'park', label:'Park sale', desc:'Holds the current sale to recall later.'},
-  {id:'nosale', label:'No sale', desc:'Opens the drawer with no transaction (needs manager approval).'},
-  {id:'customer', label:'Attach customer', desc:'Attaches a customer for loyalty points.'},
-  {id:'search', label:'Search', desc:'Jumps to the search box.'}
+  // Catalogue
+  {id:'product', group:'Catalogue', label:'Product', desc:'Adds one specific catalogue item to the sale.'},
+  {id:'category', group:'Catalogue', label:'Section link', desc:'Jumps to another section page on the till.'},
+  {id:'search', group:'Catalogue', label:'Search', desc:'Jumps to the search box.'},
+  // Sale actions
+  {id:'cash', group:'Sale actions', label:'Cash', desc:'Goes straight to checkout with Cash selected.'},
+  {id:'card', group:'Sale actions', label:'Card', desc:'Goes straight to checkout with Card selected.'},
+  {id:'checkout', group:'Sale actions', label:'Charge / checkout', desc:'Opens checkout on whichever tab was last used.'},
+  {id:'discount', group:'Sale actions', label:'Discount sale', desc:'Opens the whole-sale discount panel.'},
+  {id:'clear', group:'Sale actions', label:'Clear sale', desc:'Empties the current sale to start again.'},
+  {id:'void', group:'Sale actions', label:'Void sale', desc:'Voids the current sale (needs manager approval).'},
+  {id:'park', group:'Sale actions', label:'Park sale', desc:'Holds the current sale to recall later.'},
+  {id:'recall', group:'Sale actions', label:'Recall held sales', desc:'Opens the list of parked sales.'},
+  {id:'nosale', group:'Sale actions', label:'No sale', desc:'Opens the drawer with no transaction (needs manager approval).'},
+  // Customer
+  {id:'customer', group:'Customer', label:'Attach customer', desc:'Attaches a customer for loyalty points.'},
+  {id:'clearcustomer', group:'Customer', label:'Remove customer', desc:'Detaches the customer from the current sale.'},
+  // Navigation
+  {id:'display', group:'Navigation', label:'Customer display', desc:'Opens the customer-facing display window.'},
+  {id:'logout', group:'Navigation', label:'Log out', desc:'Switches user / locks the till.'},
+  // Layout
+  {id:'label', group:'Layout', label:'Heading / label', desc:'A plain text tile for grouping buttons — not clickable.'},
+  {id:'spacer', group:'Layout', label:'Blank spacer', desc:'An empty gap so nearby buttons line up. Invisible on the till.'}
 ];
+const BLOCK_GROUPS = ['Catalogue','Sale actions','Customer','Navigation','Layout'];
+const BLOCK_ACTION_SUB = {
+  cash:'Quick pay', card:'Quick pay', checkout:'Opens checkout', discount:'Whole-sale discount',
+  clear:'Clears the sale', void:'Needs manager approval', park:'Holds the sale', recall:'Held sales',
+  nosale:'Needs manager approval', customer:'Loyalty', clearcustomer:'Loyalty', display:'Opens a window',
+  logout:'Switches user', search:'Jumps to search'
+};
 const FONT_OPTS = [
   {id:'inter', label:'Inter', stack:"'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", vibe:'Modern & neutral'},
   {id:'poppins', label:'Poppins', stack:"'Poppins',system-ui,sans-serif", vibe:'Friendly & rounded'},
@@ -883,7 +942,7 @@ function seedState(){
     online: (typeof navigator!=='undefined' ? navigator.onLine : true),
     cp: { tab:'branding', editingProductId:null, editingCategoryId:null, editingStaffId:null, addingProduct:null, addingStaff:false,
       expandedTxn:null, typeSearch:'', editingCustomerId:null, addingCustomer:false, dataMsg:'', importPending:null,
-      layoutCatId:null, blockEditor:null }
+      layoutCatId:null, blockEditor:null, builderSearch:'' }
   };
 }
 let state = seedState();
@@ -1020,7 +1079,7 @@ function blockDisplay(b){
     const c = state.categories.find(x=>x.id===b.categoryId); if(!c) return null;
     return {label: b.label || c.name, sub:'Go to category', color: b.color};
   }
-  return {label: b.label || blockTypeMeta(b.type).label, sub: (b.type==='cash'||b.type==='card') ? 'Quick pay' : 'Action', color: b.color};
+  return {label: b.label || blockTypeMeta(b.type).label, sub: BLOCK_ACTION_SUB[b.type] || 'Action', color: b.color};
 }
 function shade(hex, pct){
   hex = hex.replace('#','');
@@ -1228,6 +1287,7 @@ function render(){
     case 'login': html = renderLogin(); break;
     case 'till': html = renderTill(); break;
     case 'controlpanel': html = renderControlPanel(); break;
+    case 'builder': html = renderTillBuilder(); break;
     case 'display': html = renderCustomerDisplay(); break;
   }
   root.innerHTML = html
@@ -1677,6 +1737,36 @@ function renderCustomerPickerModal(){
 }
 
 /* ============================ TILL ============================ */
+/* Shared header bar — used by the live till and, in a non-interactive "preview" form,
+   by the till layout builder — so the builder always shows the true, standard header. */
+function renderTillHeaderBar(opts){
+  opts = opts || {};
+  const interactive = opts.interactive !== false;
+  const b = state.business;
+  const tillLvl = brandStage('till');
+  const isAdmin = state.currentStaff && state.currentStaff.role==='admin';
+  return `
+    <div class="till-header lvl-${tillLvl}">
+      <div class="th-logo">${logoNode()}</div>
+      <div>
+        <div class="th-name">${esc(b.name)}</div>
+        <div class="th-meta" id="th-clock">${new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <span class="status-pill ${state.online?'':'off'}"><span class="dot"></span>${state.online?'Online — syncing':'Offline — trading normally'}</span>
+      <div class="th-spacer"></div>
+      <div class="th-fn">
+        <button class="fn-btn" title="Open ${ticketLabel(true).toLowerCase()}" ${interactive?`onclick="openTicketsModal()"`:'disabled'}>${ticketLabel(true)}${state.parkedTickets.length?` <span class="ct">${state.parkedTickets.length}</span>`:''}</button>
+        <button class="fn-btn" title="No sale (open drawer)" ${interactive?`onclick="noSaleFlow()"`:'disabled'}>No sale</button>
+        <button class="fn-btn" title="Open customer display" ${interactive?`onclick="window.open(location.pathname+'?display=1','_blank','width=480,height=640')"`:'disabled'}>Display</button>
+        ${isAdmin && interactive ? `<button class="fn-btn" onclick="openControlPanel()">Control panel</button>` : ''}
+      </div>
+      <div class="th-staff">
+        <div class="th-staff-av">${getInitials(state.currentStaff?.name)}</div>
+        <div class="th-staff-name">${esc(state.currentStaff?.name||'')}</div>
+      </div>
+      <button class="fn-btn" title="Switch user / log out" ${interactive?`onclick="logout()"`:'disabled'}>Log out</button>
+    </div>`;
+}
 function renderTill(){
   const b = state.business;
   const cats = state.categories;
@@ -1695,26 +1785,7 @@ function renderTill(){
   const watermark = brandImg('watermark');
   return `
   <div class="till-wrap">
-    <div class="till-header lvl-${tillLvl}">
-      <div class="th-logo">${logoNode()}</div>
-      <div>
-        <div class="th-name">${esc(b.name)}</div>
-        <div class="th-meta" id="th-clock">${new Date().toLocaleString('en-GB',{weekday:'short',hour:'2-digit',minute:'2-digit'})}</div>
-      </div>
-      <span class="status-pill ${state.online?'':'off'}"><span class="dot"></span>${state.online?'Online — syncing':'Offline — trading normally'}</span>
-      <div class="th-spacer"></div>
-      <div class="th-fn">
-        <button class="fn-btn" title="Open ${ticketLabel(true).toLowerCase()}" onclick="openTicketsModal()">${ticketLabel(true)}${state.parkedTickets.length?` <span class="ct">${state.parkedTickets.length}</span>`:''}</button>
-        <button class="fn-btn" title="No sale (open drawer)" onclick="noSaleFlow()">No sale</button>
-        <button class="fn-btn" title="Open customer display" onclick="window.open(location.pathname+'?display=1','_blank','width=480,height=640')">Display</button>
-        ${isAdmin ? `<button class="fn-btn" onclick="openControlPanel()">Control panel</button>` : ''}
-      </div>
-      <div class="th-staff">
-        <div class="th-staff-av">${getInitials(state.currentStaff?.name)}</div>
-        <div class="th-staff-name">${esc(state.currentStaff?.name||'')}</div>
-      </div>
-      <button class="fn-btn" title="Switch user / log out" onclick="logout()">Log out</button>
-    </div>
+    ${renderTillHeaderBar({interactive:true})}
     <div class="till-main">
       <div class="till-products">
         ${watermark && tillLvl==='bold' ? `<div class="till-watermark"><img src="${watermark}" alt=""></div>` : ''}
@@ -1800,6 +1871,15 @@ function renderLiveLayoutGrid(cat, isAdmin){
   }
   return `<div class="layout-grid" style="--layout-cols:${LAYOUT_COLS};">
     ${blocks.map(bl=>{
+      if(bl.type==='spacer'){
+        return `<div style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};"></div>`;
+      }
+      if(bl.type==='label'){
+        return `
+        <div class="product-btn" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};background:var(--surface-alt);color:var(--text);cursor:default;box-shadow:none;border-left-color:transparent;">
+          <div><div class="nm">${esc(bl.label||'Label')}</div></div>
+        </div>`;
+      }
       if(bl.type==='product'){
         const p = state.products.find(x=>x.id===bl.productId); if(!p) return '';
         const low = p.trackStock && p.stock<=p.lowStockThreshold;
@@ -1842,6 +1922,19 @@ function fireBlockAction(catId, blockId){
     case 'nosale': noSaleFlow(); break;
     case 'customer': openCustomerPicker(); break;
     case 'search': document.querySelector('.search-row input')?.focus(); break;
+    case 'checkout':
+      if(!state.cart.length){ toast('Add items to the sale first.'); return; }
+      openCheckout();
+      break;
+    case 'clear':
+      if(!state.cart.length){ toast('The sale is already empty.'); return; }
+      if(confirm('Clear the current sale?')) clearCart();
+      break;
+    case 'recall': openTicketsModal(); break;
+    case 'clearcustomer': clearActiveCustomer(); break;
+    case 'display': window.open(location.pathname+'?display=1','_blank','width=480,height=640'); break;
+    case 'logout': logout(); break;
+    // 'label' and 'spacer' are decorative — they render without a click handler.
   }
 }
 function quickPay(method){
@@ -2560,16 +2653,99 @@ function clearSwatchSel(idBase){ document.querySelectorAll(`[id^="${idBase}-swop
 /* ---------- Till layout tab (customisable block grid editor) ---------- */
 function renderCpLayout(){
   const cats = state.categories;
-  if(!cats.length){
+  return `
+  <div class="cp-topbar">
+    <div><h1>Till layout</h1><div class="sub">Design exactly what appears on the till — every button and section, arranged however you like. Nothing here is fixed.</div></div>
+    <button class="btn btn-primary" onclick="openTillBuilder()">Configure till layout</button>
+  </div>
+  <div class="card section-card" style="text-align:center;padding:${cats.length?'28px 24px':'40px 24px'};">
+    ${cats.length ? `
+      <h3 style="margin-bottom:4px;">${cats.length} section${cats.length===1?'':'s'} on this till</h3>
+      <p style="color:var(--text-soft);font-size:13.5px;margin-bottom:20px;">Each section is its own blank page of buttons — products, sale actions, links to other sections, whatever you need.</p>
+      <div class="prod-list" style="text-align:left;max-width:460px;margin:0 auto 22px;">
+        ${cats.map(c=>{
+          const n = categoryBlocks(c).length;
+          return `
+          <div class="prod-row">
+            <div class="swatch" style="background:${c.color}">${esc(getInitials(c.name))}</div>
+            <div class="pinfo"><div class="pn">${esc(c.name)}</div><div class="pd">${n} button${n===1?'':'s'}</div></div>
+          </div>`;
+        }).join('')}
+      </div>
+    ` : `
+      <h3 style="margin-bottom:8px;">Nothing built yet</h3>
+      <p style="color:var(--text-soft);font-size:13.5px;margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto;">Open the configurator to start from a completely blank till screen — add sections, then fill each one with exactly the buttons you want.</p>
+    `}
+    <button class="btn btn-primary btn-lg" onclick="openTillBuilder()">Configure till layout</button>
+  </div>`;
+}
+function cpLayoutSelectCategory(id){ state.cp.layoutCatId = id; render(); }
+/* ---------- Full-screen till layout builder ---------- */
+function openTillBuilder(){
+  if(!state.cp.layoutCatId || !state.categories.some(c=>c.id===state.cp.layoutCatId)) state.cp.layoutCatId = state.categories[0]?.id || null;
+  state.cp.blockEditor = null;
+  state.cp.editingCategoryId = null;
+  state.cp.builderSearch = '';
+  state.screen = 'builder';
+  render();
+}
+function closeTillBuilder(){
+  state.cp.blockEditor = null;
+  state.cp.editingCategoryId = null;
+  state.screen = 'controlpanel';
+  state.cp.tab = 'layout';
+  render();
+}
+function renderTillBuilder(){
+  const cats = state.categories;
+  if(state.cp.layoutCatId && !cats.some(c=>c.id===state.cp.layoutCatId)) state.cp.layoutCatId = null;
+  if(!state.cp.layoutCatId) state.cp.layoutCatId = cats[0]?.id || null;
+  const cat = cats.find(c=>c.id===state.cp.layoutCatId) || null;
+  return `
+  <div class="till-wrap">
+    ${renderTillHeaderBar({interactive:false})}
+    <div class="builder-toolbar">
+      <div class="builder-sections">
+        ${cats.map(c=>renderBuilderSectionTab(c)).join('')}
+        <button class="builder-add-section" onclick="builderAddSection()">+ Add section</button>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="closeTillBuilder()">✓ Done configuring</button>
+    </div>
+    <div class="till-main">
+      <div class="till-products builder-canvas">
+        ${cat ? renderBuilderGrid(cat) : `<div class="empty-state">Add a section above to start — it opens completely blank, ready for your buttons.</div>`}
+      </div>
+      ${renderBuilderPalette(cat)}
+    </div>
+  </div>`;
+}
+function renderBuilderSectionTab(c){
+  const active = c.id===state.cp.layoutCatId;
+  if(state.cp.editingCategoryId===c.id){
     return `
-    <div class="cp-topbar"><div><h1>Till layout</h1><div class="sub">Design exactly what appears on the till, category by category.</div></div></div>
-    <div class="card section-card" style="text-align:center;padding:40px 24px;">
-      <h3 style="margin-bottom:8px;">Add a category first</h3>
-      <p style="color:var(--text-soft);font-size:13.5px;">Till layout is built one category page at a time — add a category from the ${esc(typeLabel())} tab to get started.</p>
+    <div class="builder-sect-edit">
+      <input type="color" id="cat-color-${c.id}" value="${c.color}">
+      <input type="text" id="cat-name-${c.id}" value="${esc(c.name)}" maxlength="24">
+      <button class="icon-btn" style="width:30px;height:30px;" onclick="cpSaveCategory('${c.id}')" title="Save">✓</button>
+      <button class="icon-btn" style="width:30px;height:30px;" onclick="state.cp.editingCategoryId=null;render()" title="Cancel">✕</button>
     </div>`;
   }
-  if(!state.cp.layoutCatId || !cats.some(c=>c.id===state.cp.layoutCatId)) state.cp.layoutCatId = cats[0].id;
-  const cat = cats.find(c=>c.id===state.cp.layoutCatId);
+  return `
+  <div class="builder-sect-tab ${active?'active':''}">
+    <button class="bst-main" onclick="cpLayoutSelectCategory('${c.id}')"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</button>
+    <button class="bst-ic" onclick="state.cp.editingCategoryId='${c.id}';render()" title="Rename section">${ICON_EDIT}</button>
+    <button class="bst-ic" onclick="cpDeleteCategory('${c.id}')" title="Delete section">${ICON_TRASH}</button>
+  </div>`;
+}
+function builderAddSection(){
+  const name = prompt('Section name:'); if(!name || !name.trim()) return;
+  const cat = {id:uid(), name:name.trim(), color: PALETTE[state.categories.length % PALETTE.length], blocks:[]};
+  state.categories.push(cat);
+  state.cp.layoutCatId = cat.id;
+  render();
+  toast(`“${cat.name}” added — it's blank, ready to build on.`);
+}
+function renderBuilderGrid(cat){
   const blocks = categoryBlocks(cat);
   const rows = layoutRowCount(cat);
   const occ = {};
@@ -2583,25 +2759,87 @@ function renderCpLayout(){
   }
   const blockTiles = blocks.map(bl=>{
     const d = blockDisplay(bl); if(!d) return '';
-    return `<button class="layout-cell-block" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};background:${d.color};" onclick="cpLayoutEditBlock('${cat.id}','${bl.id}')">
+    return `<button class="layout-cell-block type-${bl.type}" style="grid-column:${bl.x+1}/span ${bl.w};grid-row:${bl.y+1}/span ${bl.h};${bl.type!=='spacer'?`background:${d.color};`:''}" onclick="cpLayoutEditBlock('${cat.id}','${bl.id}')">
       <div class="lb-type">${esc(blockTypeMeta(bl.type).label)}</div>
       <div class="lb-name">${esc(d.label)}</div>
     </button>`;
   }).join('');
+  return `<div class="layout-editor-grid" style="--layout-cols:${LAYOUT_COLS};">${blockTiles}${emptyCells}</div>`;
+}
+function onBuilderSearch(v){
+  state.cp.builderSearch = v; render();
+  const el = document.getElementById('bp-search-input'); if(!el) return;
+  el.focus(); const len = el.value.length; el.setSelectionRange(len,len);
+}
+function renderBuilderPalette(cat){
+  const q = (state.cp.builderSearch||'').trim().toLowerCase();
+  const matches = s => !q || s.toLowerCase().includes(q);
+  const sections = state.categories.filter(c => (!cat || c.id!==cat.id) && matches(c.name));
+  const actionTypes = BLOCK_TYPES.filter(t => t.id!=='product' && t.id!=='category' && matches(t.label+' '+t.desc));
+  const actionGroups = {};
+  actionTypes.forEach(t => { (actionGroups[t.group] = actionGroups[t.group]||[]).push(t); });
+  const prodGroups = state.categories.map(c => ({
+    cat:c, prods: state.products.filter(p => p.categoryId===c.id && matches(p.name+' '+(p.sku||'')))
+  })).filter(g => g.prods.length);
+  const nothing = !sections.length && !actionTypes.length && !prodGroups.length;
   return `
-  <div class="cp-topbar">
-    <div><h1>Till layout</h1><div class="sub">Tap an empty cell to add a button, tap a button to edit, resize or remove it. Each category is its own page on the till.</div></div>
-  </div>
-  <div class="cat-tabs" style="margin-bottom:16px;">
-    ${cats.map(c=>`<button class="cat-tab ${c.id===cat.id?'active':''}" onclick="cpLayoutSelectCategory('${c.id}')"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</button>`).join('')}
-  </div>
-  <div class="card section-card" style="padding:16px;">
-    <div class="layout-editor-grid" style="--layout-cols:${LAYOUT_COLS};">
-      ${blockTiles}${emptyCells}
+  <div class="builder-palette">
+    <div class="bp-head">
+      <h3>Add to “${esc(cat?cat.name:'…')}”</h3>
+      <div class="sc-sub">Search products, sections and buttons — tap one to drop it onto the canvas.</div>
+    </div>
+    <div class="type-search bp-search">
+      <span class="ic">${ICON_SEARCH}</span>
+      <input type="text" id="bp-search-input" placeholder="Search everything…" value="${esc(state.cp.builderSearch||'')}" oninput="onBuilderSearch(this.value)" ${!cat?'disabled':''}>
+    </div>
+    <div class="bp-list">
+      ${nothing ? `<div class="empty-state" style="padding:34px 10px;">No matches for “${esc(state.cp.builderSearch)}”.</div>` : ''}
+      ${sections.length ? `
+        <div class="bp-group-label">Sections</div>
+        ${sections.map(c=>`
+          <button class="bp-item" ${!cat?'disabled':''} onclick="builderQuickAdd('section','${c.id}')">
+            <span class="bp-dot" style="background:${c.color}"></span>
+            <span class="bp-info"><span class="bp-name">${esc(c.name)}</span><span class="bp-desc">Jumps straight to this section</span></span>
+          </button>`).join('')}
+      ` : ''}
+      ${BLOCK_GROUPS.filter(g=>actionGroups[g]?.length).map(g=>`
+        <div class="bp-group-label">${esc(g)}</div>
+        ${actionGroups[g].map(t=>`
+          <button class="bp-item" ${!cat?'disabled':''} onclick="builderQuickAdd('action','${t.id}')">
+            <span class="bp-dot" style="background:var(--accent)"></span>
+            <span class="bp-info"><span class="bp-name">${esc(t.label)}</span><span class="bp-desc">${esc(t.desc)}</span></span>
+          </button>`).join('')}
+      `).join('')}
+      ${prodGroups.map(g=>`
+        <div class="bp-group-label">${esc(g.cat.name)}</div>
+        ${g.prods.map(p=>`
+          <button class="bp-item" ${!cat?'disabled':''} onclick="builderQuickAdd('product','${p.id}')">
+            <span class="bp-dot" style="background:${p.color||'var(--primary)'}"></span>
+            <span class="bp-info"><span class="bp-name">${esc(p.name)}</span><span class="bp-desc">${fmtMoney(p.price)}${p.details?' · '+esc(p.details):''}</span></span>
+          </button>`).join('')}
+      `).join('')}
     </div>
   </div>`;
 }
-function cpLayoutSelectCategory(id){ state.cp.layoutCatId = id; render(); }
+function builderQuickAdd(kind, id){
+  const cat = state.categories.find(c=>c.id===state.cp.layoutCatId); if(!cat) return;
+  const {x,y} = nextFreeCell(cat, 1, 1);
+  if(!isAreaFree(cat, x, y, 1, 1, null)){ toast('No free space left in this section — remove or resize a button first.'); return; }
+  let block;
+  if(kind==='product'){
+    const p = state.products.find(x=>x.id===id); if(!p) return;
+    block = {id:uid(), type:'product', productId:p.id, x, y, w:1, h:1, color: p.color||state.business.primaryColor, label:p.name};
+  } else if(kind==='section'){
+    const c = state.categories.find(x=>x.id===id); if(!c) return;
+    block = {id:uid(), type:'category', categoryId:c.id, x, y, w:1, h:1, color:c.color, label:c.name};
+  } else {
+    const meta = blockTypeMeta(id);
+    block = {id:uid(), type:id, x, y, w:1, h:1, color: state.business.accentColor, label: meta.label};
+  }
+  categoryBlocks(cat).push(block);
+  render();
+  toast(`Added “${block.label}” to ${cat.name}.`);
+}
 function cpLayoutAddBlock(catId, x, y){
   const otherCat = state.categories.find(c=>c.id!==catId) || null;
   const firstProduct = state.products[0] || null;
@@ -2708,15 +2946,16 @@ function renderLayoutBlockModal(){
   const isNew = !be.blockId;
   return `
   <div class="modal-overlay" onclick="if(event.target===this) cpLayoutCloseEditor()">
-    <div class="modal" style="max-width:440px;">
+    <div class="modal" style="max-width:500px;">
       <div class="modal-head"><h2>${isNew?'Add a block':'Edit block'}</h2><button class="close" onclick="cpLayoutCloseEditor()">✕</button></div>
       <div class="modal-body">
         <div class="field">
           <label>This block</label>
-          <div class="chip-row">
-            ${BLOCK_TYPES.map(t=>`<button class="chip ${be.type===t.id?'sel-primary':''}" onclick="cpLayoutSetType('${t.id}')">${esc(t.label)}</button>`).join('')}
-          </div>
-          <div class="hint">${esc(blockTypeMeta(be.type).desc)}</div>
+          ${BLOCK_GROUPS.map(g=>{
+            const items = BLOCK_TYPES.filter(t=>t.group===g);
+            return `<div class="chip-group-label">${esc(g)}</div><div class="chip-row">${items.map(t=>`<button class="chip ${be.type===t.id?'sel-primary':''}" onclick="cpLayoutSetType('${t.id}')">${esc(t.label)}</button>`).join('')}</div>`;
+          }).join('')}
+          <div class="hint" style="margin-top:8px;">${esc(blockTypeMeta(be.type).desc)}</div>
         </div>
         ${be.type==='product' ? `
         <div class="field">
@@ -2730,22 +2969,24 @@ function renderLayoutBlockModal(){
         </div>` : ''}
         ${be.type==='category' ? `
         <div class="field">
-          <label>Goes to category</label>
+          <label>Goes to section</label>
           <select id="lbe-category" onchange="cpLayoutSetCategoryRef(this.value)">
             ${state.categories.map(c=>`<option value="${c.id}" ${c.id===be.categoryId?'selected':''}>${esc(c.name)}</option>`).join('')}
           </select>
         </div>` : ''}
+        ${be.type!=='spacer' ? `
         <div class="field">
           <label>Label on the till</label>
           <input type="text" id="lbe-label" value="${esc(be.label)}" oninput="state.cp.blockEditor.label=this.value" maxlength="40">
-        </div>
+        </div>` : ''}
+        ${be.type!=='spacer' ? `
         <div class="field">
           <label>Colour</label>
           <div class="swatch-picker">
             ${PALETTE.map(c=>`<div class="swatch-opt lbe-swatch ${be.color.toLowerCase()===c.toLowerCase()?'sel':''}" id="lbe-swatch-${c.replace('#','')}" style="background:${c}" onclick="cpLayoutPickColor('${c}')"></div>`).join('')}
             <input type="color" value="${be.color}" style="width:26px;height:26px;padding:0;border-radius:7px;" oninput="cpLayoutPickColor(this.value)">
           </div>
-        </div>
+        </div>` : `<div class="hint" style="margin-bottom:14px;">Spacers are invisible on the till — they just hold space so nearby buttons line up.</div>`}
         <div class="field" style="margin-bottom:6px;">
           <label>Size on the till</label>
           <div class="size-stepper-row">
