@@ -12,7 +12,7 @@
  * cycle in the new cache. Bump the version suffix on every deploy that must
  * force-refresh clients.
  */
-const CACHE_NAME = 'cashier-system-shell-v2';
+const CACHE_NAME = 'cashier-system-shell-v3';
 const SHELL_FILES = [
   './',
   './till_1.html',
